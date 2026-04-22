@@ -32,6 +32,11 @@ void invalid_inst(vaddr_t thispc) {
   temp[0] = inst_fetch(&pc, 4);
   temp[1] = inst_fetch(&pc, 4);
 
+#ifdef CONFIG_ITRACE
+  void iringbuf_display();
+  iringbuf_display();
+#endif
+
   uint8_t *p = (uint8_t *)temp;
   printf("invalid opcode(PC = " FMT_WORD "):\n"
       "\t%02x %02x %02x %02x %02x %02x %02x %02x ...\n"

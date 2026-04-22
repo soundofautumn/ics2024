@@ -17,12 +17,12 @@
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <memory/vaddr.h>
 #include "sdb.h"
 
 static int is_batch_mode = false;
 
 void init_regex();
-void init_wp_pool();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -49,8 +49,136 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  nemu_state.state = NEMU_QUIT;
   return -1;
 }
+
+static int cmd_si(char * args) {
+  int n = 1;
+  if(args != NULL) {
+    sscanf(args, "%d", &n);
+  }
+  cpu_exec(n);
+  return 0;
+}
+
+static int cmd_info(char *args) {
+  if(args == NULL) {
+    printf("Usage: info r - display register status\n");
+    printf("       info w - display watchpoint status\n");
+    return 0;
+  }
+  if(strcmp(args, "r") == 0) {
+    isa_reg_display();
+  }
+  else if(strcmp(args, "w") == 0) {
+    wp_display();
+  }
+  else {
+    printf("Unknown subcommand '%s'\n", args);
+  }
+  return 0;
+}
+
+static int cmd_x(char *args) {
+  int n, offset;
+  if(args == NULL) {
+    printf("Usage: x N EXPR\n");
+    return 0;
+  }
+  sscanf(args, "%d %n", &n, &offset);
+  char *expression = args + offset;
+  bool success;
+  word_t addr = expr(expression, &success);
+  if(!success) {
+    printf("Invalid expression '%s'\n", expression);
+    return 0;
+  }
+  for(int i = 0; i < n; i++) {
+    printf(FMT_WORD ": ", addr + i * 4);
+    for(int j = 0; j < 4; j++) {
+      printf("%02x ", vaddr_read(addr + i * 4 + j, 1));
+    }
+    printf("\n");
+  }
+  return 0;
+}
+
+static int cmd_p(char *args) {
+  if(args == NULL) {
+    printf("Usage: p EXPR\n");
+    return 0;
+  }
+  bool success;
+  word_t result = expr(args, &success);
+  if(success) {
+    printf("%u\n", result);
+  }
+  else {
+    printf("Invalid expression '%s'\n", args);
+  }
+  return 0;
+}
+
+static int cmd_w(char *args) {
+  if(args == NULL) {
+    printf("Usage: w EXPR\n");
+    return 0;
+  }
+  bool success;
+  word_t value = expr(args, &success);
+  if(success) {
+    WP *wp = new_wp();
+    if(wp != NULL) {
+      wp->expr = strdup(args);
+      wp->value = value;
+      printf("Watchpoint %d: %s = %u\n", wp->NO, wp->expr, wp->value);
+    }
+    else {
+      printf("No free watchpoint\n");
+    }
+  }
+  else {
+    printf("Invalid expression '%s'\n", args);
+  }
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  if(args == NULL) {
+    printf("Usage: d N\n");
+    return 0;
+  }
+  int n;
+  if(sscanf(args, "%d", &n) != 1) {
+    printf("Invalid argument '%s'\n", args);
+    return 0;
+  }
+  WP *wp = find_wp(n);
+  if(wp == NULL) {
+    printf("No such watchpoint %d\n", n);
+    return 0;
+  }
+  free_wp(wp);
+  return 0;
+}
+
+#ifdef CONFIG_MTRACE
+static int cmd_mtrace(char *args) {
+  if(args == NULL) {
+    printf("Usage: mtrace START END\n");
+    return 0;
+  }
+  word_t start, end;
+  if(sscanf(args, FMT_WORD " " FMT_WORD, &start, &end) != 2) {
+    printf("Invalid arguments '%s'\n", args);
+    return 0;
+  }
+  set_mtrace_range(start, end);
+  printf("Memory trace range set to [" FMT_WORD ", " FMT_WORD ")\n", start, end);
+  return 0;
+}
+#endif
 
 static int cmd_help(char *args);
 
@@ -59,12 +187,18 @@ static struct {
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display information about all supported commands", cmd_help },
+  { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
-  /* TODO: Add more commands */
-
+  { "si", "Step into instruction(s)", cmd_si },
+  { "info", "Display register or watchpoint information", cmd_info },
+  { "x", "Scan the memory", cmd_x },
+  { "p", "Evaluate expression", cmd_p },
+  { "w", "Set a watchpoint", cmd_w },
+  { "d", "Delete a watchpoint", cmd_d },
+#ifdef CONFIG_MTRACE
+  { "mtrace", "Set memory trace range", cmd_mtrace },
+#endif
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -140,4 +274,7 @@ void init_sdb() {
 
   /* Initialize the watchpoint pool. */
   init_wp_pool();
+
+  /* Initialize the ring buffer. */
+  init_iringbuf();
 }

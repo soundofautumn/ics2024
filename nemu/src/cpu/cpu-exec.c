@@ -32,12 +32,20 @@ static bool g_print_step = false;
 
 void device_update();
 
+void check_watchpoints();
+void write_iringbuf(const char *str);
+void iringbuf_display();
+
+void ftrace_statistic();
+
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+  IFDEF(CONFIG_WATCHPOINT, check_watchpoints());
+  IFDEF(CONFIG_IRINGBUF, write_iringbuf(_this->logbuf));
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
@@ -83,6 +91,7 @@ static void execute(uint64_t n) {
 }
 
 static void statistic() {
+  IFDEF(CONFIG_FTRACE, ftrace_statistic());
   IFNDEF(CONFIG_TARGET_AM, setlocale(LC_NUMERIC, ""));
 #define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
   Log("host time spent = " NUMBERIC_FMT " us", g_timer);
