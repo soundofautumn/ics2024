@@ -49,7 +49,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
     case TYPE_S:       src1R(); src2R(); immS();       break;
     case TYPE_B:       src1R(); src2R(); immB();       break;
     case TYPE_U:                         immU();       break;
-    case TYPE_J:                         immJ();       break;
+    case TYPE_J:       src1R();          immJ();       break;
     case TYPE_N: break;
     default: panic("unsupported type = %d", type);
   }
@@ -94,10 +94,9 @@ static int decode_exec(Decode *s) {
   IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc););
   #define IS_LINK_REG(reg) ((reg) == 1 || (reg) == 5)
   #define FTRACE_CALL_OR_RET() do { \
-    int rs1 = BITS(s->isa.inst, 19, 15); \
     if (IS_LINK_REG(rd)) { \
       ftrace_call(s->pc, s->dnpc); \
-    } else if (rd == 0 && IS_LINK_REG(rs1) && imm == 0) { \
+    } else if (rd == 0 && src1 == 1 && imm == 0) { \
       ftrace_ret(s->pc); \
     } \
   } while(0)
@@ -107,6 +106,9 @@ static int decode_exec(Decode *s) {
   // 011
   // jal
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm; IFDEF(CONFIG_FTRACE, if (IS_LINK_REG(rd)) ftrace_call(s->pc, s->dnpc);) );
+
+  #undef IS_LINK_REG
+  #undef FTRACE_CALL_OR_RET
 
   // 100
   // op_imm
