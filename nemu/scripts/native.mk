@@ -29,7 +29,15 @@ override ARGS += $(ARGS_DIFF)
 
 # Command to execute NEMU
 IMG ?=
-NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
+ELF ?=
+ifneq ($(IMG),)
+  ifeq ($(ELF),)
+    ELF := $(addsuffix .elf,$(basename $(IMG)))
+  endif
+endif
+ELF_ARG := $(if $(ELF),--elf $(ELF),)
+FTRACE_LOG_ARG := $(if $(ELF),--ftrace-log $(BUILD_DIR)/nemu-ftrace.txt,)
+NEMU_EXEC := $(BINARY) $(ARGS) $(ELF_ARG) $(FTRACE_LOG_ARG) $(IMG)
 
 run-env: $(BINARY) $(DIFF_REF_SO)
 

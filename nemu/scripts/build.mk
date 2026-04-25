@@ -9,6 +9,7 @@ endif
 
 WORK_DIR  = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
+PREPROCESS_DIR = $(BUILD_DIR)/preprocessed-$(NAME)$(SO)
 
 INC_PATH := $(WORK_DIR)/include $(INC_PATH)
 OBJ_DIR  = $(BUILD_DIR)/obj-$(NAME)$(SO)
@@ -32,12 +33,14 @@ $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(if $(CONFIG_CC_PREPROCESS),mkdir -p $(dir $(PREPROCESS_DIR)/$*.i); $(CC) $(CFLAGS) -E -o $(PREPROCESS_DIR)/$*.i $<,)
 	$(call call_fixdep, $(@:.o=.d), $@)
 
 $(OBJ_DIR)/%.o: %.cc
 	@echo + CXX $<
 	@mkdir -p $(dir $@)
 	@$(CXX) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
+	@$(if $(CONFIG_CC_PREPROCESS),mkdir -p $(dir $(PREPROCESS_DIR)/$*.ii); $(CXX) $(CFLAGS) $(CXXFLAGS) -E -o $(PREPROCESS_DIR)/$*.ii $<,)
 	$(call call_fixdep, $(@:.o=.d), $@)
 
 # Depencies
