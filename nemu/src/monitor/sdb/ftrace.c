@@ -160,7 +160,7 @@ void ftrace_call(word_t pc, word_t target_addr) {
     }
 }
 
-void ftrace_return(word_t pc) {
+void ftrace_ret(word_t pc) {
     if (!ftrace_enabled) {
         return;
     }
