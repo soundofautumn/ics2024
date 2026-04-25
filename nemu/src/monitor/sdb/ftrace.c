@@ -170,17 +170,17 @@ void ftrace_ret(word_t pc, word_t target_addr) {
         return;
     }
 
-    const function_info_t *func = find_function_within(pc);
+    const function_info_t *cur = find_function_within(pc);
+    const function_info_t *target = find_function_within(target_addr);
+    const static char *unknown_str = "unknown";
+    const char *cur_func_name = (cur != NULL) ? cur->name : unknown_str;
+    const char *target_func_name = (target != NULL) ? target->name : unknown_str;
 
     if (call_depth > 0) {
         call_depth--;
     }
     print_trace_prefix(pc);
-    if (func != NULL) {
-        ftrace_log("ret [%s@" FMT_WORD "]\n", func->name, target_addr);
-    } else {
-        ftrace_log("ret [unknown@" FMT_WORD "]\n", target_addr);
-    }
+    ftrace_log("ret [%s@" FMT_WORD "] -> [%s@" FMT_WORD "]\n", cur_func_name, pc, target_func_name, target_addr);
 }
 
 void ftrace_statistic() {
