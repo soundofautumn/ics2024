@@ -3,6 +3,7 @@
 #include <string.h>
 #include <common.h>
 #include <stdarg.h>
+#include <limits.h>
 
 typedef MUXDEF(CONFIG_ISA64, Elf64_Ehdr, Elf32_Ehdr) ehdr_t;
 typedef MUXDEF(CONFIG_ISA64, Elf64_Shdr, Elf32_Shdr) shdr_t;
@@ -33,6 +34,18 @@ static const function_info_t *find_function(word_t addr) {
         }
     }
     return NULL;
+}
+
+static const function_info_t *find_function_within(word_t addr) {
+    word_t min_addr = UINT32_MAX;
+    const function_info_t *result = NULL;
+    for (int i = 0; i < func_count; i++) {
+        if (func_table[i].addr <= addr && func_table[i].addr < min_addr) {
+            min_addr = func_table[i].addr;
+            result = &func_table[i];
+        }
+    }
+    return result;
 }
 
 static void ftrace_log(const char *format, ...) {
@@ -157,7 +170,7 @@ void ftrace_ret(word_t pc, word_t target_addr) {
         return;
     }
 
-    const function_info_t *func = find_function(target_addr);
+    const function_info_t *func = find_function_within(target_addr);
 
     if (call_depth > 0) {
         call_depth--;
