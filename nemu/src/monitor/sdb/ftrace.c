@@ -164,9 +164,9 @@ void ftrace_ret(word_t pc, word_t target_addr) {
     }
     print_trace_prefix(pc);
     if (func != NULL) {
-        ftrace_log("call [%s@" FMT_WORD "]\n", func->name, target_addr);
+        ftrace_log("ret [%s@" FMT_WORD "]\n", func->name, target_addr);
     } else {
-        ftrace_log("call [unknown@" FMT_WORD "]\n", target_addr);
+        ftrace_log("ret [unknown@" FMT_WORD "]\n", target_addr);
     }
 }
 
