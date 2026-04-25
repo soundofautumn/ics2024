@@ -97,7 +97,7 @@ static int decode_exec(Decode *s) {
     int rs1 = BITS(s->isa.inst, 19, 15); \
     if (IS_LINK_REG(rd)) { \
       ftrace_call(s->pc, s->dnpc); \
-    } else if (rd == 0 && rs1 == 1 && imm == 0) { \
+    } else if (rd == 0 && IS_LINK_REG(rs1) && imm == 0) { \
       ftrace_ret(s->pc); \
     } \
   } while(0)
