@@ -147,7 +147,7 @@ void ftrace_call(word_t pc, word_t target_addr) {
         return;
     }
 
-    const function_info_t *func = find_function(target_addr);
+    const function_info_t *func = find_function(pc);
     print_trace_prefix(pc);
     if (func != NULL) {
         ftrace_log("call [%s@" FMT_WORD "]\n", func->name, target_addr);
