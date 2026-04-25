@@ -91,14 +91,14 @@ static int decode_exec(Decode *s) {
 
   // 001
   // jalr
-  IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc););
+  IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc, word_t target_addr););
   #define IS_LINK_REG(reg) ((reg) == 1 || (reg) == 5)
   #define FTRACE_CALL_OR_RET() do { \
     int rs1 = BITS(s->isa.inst, 19, 15); \
     if (IS_LINK_REG(rd)) { \
       ftrace_call(s->pc, s->dnpc); \
     } else if (rd == 0 && IS_LINK_REG(rs1) && imm == 0) { \
-      ftrace_ret(s->pc); \
+      ftrace_ret(s->pc, s->dnpc); \
     } \
   } while(0)
 

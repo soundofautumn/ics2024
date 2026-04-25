@@ -22,7 +22,6 @@ typedef struct {
 
 static function_info_t func_table[MAX_FUNC_NUM];
 static int func_count = 0;
-static function_info_t call_stack[MAX_CALL_DEPTH];
 static int call_depth = 0;
 
 static FILE *ftrace_log_fp = NULL;
@@ -152,15 +151,13 @@ void ftrace_call(word_t pc, word_t target_addr) {
     }
 
     if (call_depth < MAX_CALL_DEPTH) {
-        call_stack[call_depth].name = (func != NULL) ? func->name : NULL;
-        call_stack[call_depth].addr = target_addr;
         call_depth++;
     } else {
         LogError("Call stack overflow at depth %d", call_depth);
     }
 }
 
-void ftrace_ret(word_t pc) {
+void ftrace_ret(word_t pc, word_t target_addr) {
     if (!ftrace_enabled) {
         return;
     }
@@ -168,11 +165,10 @@ void ftrace_ret(word_t pc) {
     print_trace_prefix(pc);
     if (call_depth > 0) {
         call_depth--;
-        const char *name = call_stack[call_depth].name;
-        ftrace_log("ret  [%s]\n", name != NULL ? name : "unknown");
+        ftrace_log("ret  [to " FMT_WORD "]\n", target_addr);
         return;
     }
-    ftrace_log("ret  [unknown]\n");
+    ftrace_log("ret  [to " FMT_WORD "]\n", target_addr);
 }
 
 void ftrace_statistic() {
