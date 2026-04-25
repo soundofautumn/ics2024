@@ -180,7 +180,7 @@ void ftrace_ret(word_t pc, word_t target_addr) {
         call_depth--;
     }
     print_trace_prefix(pc);
-    ftrace_log("ret [%s@" FMT_WORD "] -> [%s@" FMT_WORD "]\n", cur_func_name, pc, target_func_name, target_addr);
+    ftrace_log("ret  [%s@" FMT_WORD "] -> [%s@" FMT_WORD "]\n", cur_func_name, pc, target_func_name, target_addr);
 }
 
 void ftrace_statistic() {
