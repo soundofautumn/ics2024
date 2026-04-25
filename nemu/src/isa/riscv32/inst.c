@@ -89,8 +89,6 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 110 ????? 11000 11", bltu   , B, if (src1 < src2) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, if (src1 >= src2) s->dnpc = s->pc + imm);
 
-  // 001
-  // jalr
   IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc, word_t target_addr););
   #define IS_LINK_REG(reg) ((reg) == 1 || (reg) == 5)
   #define FTRACE_CALL_OR_RET() do { \
@@ -101,7 +99,9 @@ static int decode_exec(Decode *s) {
       ftrace_ret(s->pc, s->dnpc); \
     } \
   } while(0)
-
+  
+  // 001
+  // jalr
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; IFDEF(CONFIG_FTRACE, FTRACE_CALL_OR_RET();) );
 
   // 011
