@@ -92,12 +92,13 @@ static int decode_exec(Decode *s) {
   // 001
   // jalr
   IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc););
+  #define IS_LINK_REG(reg) ((reg) == 1 || (reg) == 5)
 
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; IFDEF(CONFIG_FTRACE) if (rd != 0) ftrace_call(s->pc, s->dnpc); else ftrace_ret(s->pc););
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; IFDEF(CONFIG_FTRACE) int rs1 = BITS(s->isa.inst, 19, 15); if (IS_LINK_REG(rd)) ftrace_call(s->pc, s->dnpc); else if (rd == 0 && IS_LINK_REG(rs1) && imm == 0) ftrace_ret(s->pc););
 
   // 011
   // jal
-  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm; IFDEF(CONFIG_FTRACE) ftrace_call(s->pc, s->dnpc););
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm; IFDEF(CONFIG_FTRACE) if (IS_LINK_REG(rd)) ftrace_call(s->pc, s->dnpc););
 
   // 100
   // op_imm
