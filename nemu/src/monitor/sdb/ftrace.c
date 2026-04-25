@@ -12,7 +12,6 @@ typedef MUXDEF(CONFIG_ISA64, Elf64_Off, Elf32_Off) elf_off_t;
 #define ELF_ST_TYPE MUXDEF(CONFIG_ISA64, ELF64_ST_TYPE, ELF32_ST_TYPE)
 
 #define MAX_FUNC_NUM 1024
-#define MAX_CALL_DEPTH 256
 
 typedef struct {
     char* name;
@@ -150,11 +149,7 @@ void ftrace_call(word_t pc, word_t target_addr) {
         }
     }
 
-    if (call_depth < MAX_CALL_DEPTH) {
-        call_depth++;
-    } else {
-        LogError("Call stack overflow at depth %d", call_depth);
-    }
+    call_depth++;
 }
 
 void ftrace_ret(word_t pc, word_t target_addr) {
@@ -162,13 +157,17 @@ void ftrace_ret(word_t pc, word_t target_addr) {
         return;
     }
 
-    print_trace_prefix(pc);
+    const function_info_t *func = find_function(target_addr);
+
     if (call_depth > 0) {
         call_depth--;
-        ftrace_log("ret  [to " FMT_WORD "]\n", target_addr);
-        return;
     }
-    ftrace_log("ret  [to " FMT_WORD "]\n", target_addr);
+    print_trace_prefix(pc);
+    if (func != NULL) {
+        ftrace_log("call [%s@" FMT_WORD "]\n", func->name, target_addr);
+    } else {
+        ftrace_log("call [unknown@" FMT_WORD "]\n", target_addr);
+    }
 }
 
 void ftrace_statistic() {
