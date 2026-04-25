@@ -37,11 +37,11 @@ static const function_info_t *find_function(word_t addr) {
 }
 
 static const function_info_t *find_function_within(word_t addr) {
-    word_t min_addr = UINT32_MAX;
+    word_t closest_addr = 0;
     const function_info_t *result = NULL;
     for (int i = 0; i < func_count; i++) {
-        if (func_table[i].addr <= addr && func_table[i].addr < min_addr) {
-            min_addr = func_table[i].addr;
+        if (func_table[i].addr <= addr && func_table[i].addr > closest_addr) {
+            closest_addr = func_table[i].addr;
             result = &func_table[i];
         }
     }
