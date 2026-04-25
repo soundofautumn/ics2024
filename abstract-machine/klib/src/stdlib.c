@@ -34,7 +34,19 @@ void *malloc(size_t size) {
   // Therefore do not call panic() here, else it will yield a dead recursion:
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  panic("Not implemented");
+  static char *addr = NULL;
+  if (addr == NULL) {
+    addr = (char *)heap.start;
+  }
+  size = (size + 7) / 8 * 8; // align to 8 bytes
+  if ((uintptr_t)(addr + size) <= (uintptr_t)heap.end) {
+    char *ret = addr;
+    addr += size;
+    return ret;
+  } else {
+    panic("out of memory");
+  }
+  
 #endif
   return NULL;
 }
