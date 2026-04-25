@@ -93,7 +93,7 @@ static int decode_exec(Decode *s) {
   // jalr
   IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc););
 
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; IFDEF(CONFIG_FTRACE) if (rd != 0) ftrace_ret(s->pc); else ftrace_call(s->pc, s->dnpc););
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; IFDEF(CONFIG_FTRACE) if (rd != 0 && src1 == 1 && src2 == 0) ftrace_call(s->pc, s->dnpc); else ftrace_ret(s->pc););
 
   // 011
   // jal
