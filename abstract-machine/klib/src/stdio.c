@@ -215,7 +215,7 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
         emit_char(emit, ctx, &ret, '%');
         break;
       }
-      default: panic("unsupported format");
+      default: panic(strcat("unsupported format: ", &*fmt));
     }
 
     fmt ++;
