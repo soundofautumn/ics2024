@@ -116,32 +116,30 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
     }
 
     switch (*fmt) {
+      char buf[2 * sizeof(uintmax_t)];
       case 'd': {
         int n = va_arg(ap, int);
         int is_neg = (n < 0);
         uintmax_t u = (uintmax_t)(is_neg ? (unsigned int)(-(n + 1)) + 1 : (unsigned int)n);
-        char buf[32];
+        
         int digit_len = encode_uint_rev(buf, u, 10, precision, 0);
         emit_number(emit, ctx, &ret, buf, digit_len, width, precision, is_neg, NULL);
         break;
       }
       case 'u': {
         uintmax_t u = (uintmax_t)va_arg(ap, unsigned int);
-        char buf[32];
         int digit_len = encode_uint_rev(buf, u, 10, precision, 0);
         emit_number(emit, ctx, &ret, buf, digit_len, width, precision, 0, NULL);
         break;
       }
       case 'x': {
         uintmax_t u = (uintmax_t)va_arg(ap, unsigned int);
-        char buf[32];
         int digit_len = encode_uint_rev(buf, u, 16, precision, 0);
         emit_number(emit, ctx, &ret, buf, digit_len, width, precision, 0, NULL);
         break;
       }
       case 'p': {
         uintmax_t u = (uintmax_t)(uintptr_t)va_arg(ap, void *);
-        char buf[2 * sizeof(uintmax_t)];
         int digit_len = encode_uint_rev(buf, u, 16, precision, 1);
         emit_number(emit, ctx, &ret, buf, digit_len, width, precision, 0, "0x");
         break;
