@@ -1,12 +1,11 @@
 #include <common.h>
 
-
-intptr_t do_syscall(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2);
+void do_syscall(Context *c);
 
 static Context* do_event(Event e, Context* c) {
   switch (e.event) {
     case EVENT_SYSCALL: {
-      c->GPRx = do_syscall(c->GPR1, c->GPR2, c->GPR3, c->GPR4);
+      do_syscall(c);
       break;
     }
     default: panic("Unhandled event ID = %d", e.event);
