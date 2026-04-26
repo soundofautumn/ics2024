@@ -2,7 +2,7 @@
 #include "syscall.h"
 
 static void sys_yield() {
-  halt(0);
+  yield();
 }
 
 void do_syscall(Context *c) {
