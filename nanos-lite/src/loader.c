@@ -35,9 +35,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   Elf_Phdr phdr;
   for (int i = 0; i < ehdr.e_phnum; i++) {
-    Log("Loading program header %d", i);
-    Log("  type = %d, offset = %d, vaddr = %p, filesz = %d, memsz = %d",
-        phdr.p_type, phdr.p_offset, phdr.p_vaddr, phdr.p_filesz, phdr.p_memsz);
     assert(ramdisk_read(&phdr, ehdr.e_phoff + i * sizeof(Elf_Phdr), sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
     if (phdr.p_type == PT_LOAD) {
       // [VirtAddr, VirtAddr + MemSiz)
