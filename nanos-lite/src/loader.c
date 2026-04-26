@@ -36,7 +36,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   assert(ehdr->e_type == ET_EXEC);
   assert(ehdr->e_machine == EXPECT_TYPE);
   assert(ehdr->e_phnum > 0);
-  return ehdr->e_entry;
+  return (uintptr_t)elf_buf;
 }
 
 void naive_uload(PCB *pcb, const char *filename) {
