@@ -26,7 +26,6 @@ size_t ramdisk_read(void *buf, size_t offset, size_t len);
 
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
-  Log("Loading ELF file '%s' to ramdisk...", filename);
   Elf_Ehdr *ehdr;
   assert(ramdisk_read(&ehdr, 0, sizeof(Elf_Ehdr)) == sizeof(Elf_Ehdr));
   assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0);
@@ -36,6 +35,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   Elf_Phdr phdr;
   for (int i = 0; i < ehdr->e_phnum; i++) {
+    Log("Loading program header %d", i);
+    Log("  type = %d, offset = %d, vaddr = %p, filesz = %d, memsz = %d",
+        phdr.p_type, phdr.p_offset, phdr.p_vaddr, phdr.p_filesz, phdr.p_memsz);
     assert(ramdisk_read(&phdr, ehdr->e_phoff + i * sizeof(Elf_Phdr), sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
     if (phdr.p_type == PT_LOAD) {
       // [VirtAddr, VirtAddr + MemSiz)
@@ -46,7 +48,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       }
     }
   }
-  Log("ELF file '%s' loaded successfully", filename);
   return ehdr->e_entry;
 }
 
