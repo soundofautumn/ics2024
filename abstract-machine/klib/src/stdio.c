@@ -27,6 +27,58 @@ static int parse_uint(const char **fmt) {
   return val;
 }
 
+static char to_digit(unsigned int digit) {
+  return (digit < 10) ? (char)('0' + digit) : (char)('a' + digit - 10);
+}
+
+static int encode_uint_rev(char *buf, uintptr_t u, int base, int precision, int keep_zero) {
+  int digit_len = 0;
+  if (u == 0) {
+    if (precision != 0 || keep_zero) {
+      buf[digit_len++] = '0';
+    }
+    return digit_len;
+  }
+
+  while (u) {
+    buf[digit_len++] = to_digit((unsigned int)(u % (uintptr_t)base));
+    u /= (uintptr_t)base;
+  }
+  return digit_len;
+}
+
+static void emit_number(emit_func_t emit, void *ctx, int *ret,
+    char *digits_rev, int digit_len, int width, int precision,
+    int is_neg, const char *prefix) {
+  int prefix_len = 0;
+  while (prefix != NULL && prefix[prefix_len] != '\0') {
+    prefix_len++;
+  }
+
+  int zero_pad = 0;
+  if (precision > digit_len) {
+    zero_pad = precision - digit_len;
+  }
+
+  int body_len = digit_len + zero_pad + (is_neg ? 1 : 0) + prefix_len;
+  int space_pad = 0;
+  if (width > body_len) {
+    space_pad = width - body_len;
+  }
+
+  emit_repeated(emit, ctx, ret, ' ', space_pad);
+  if (is_neg) {
+    emit_char(emit, ctx, ret, '-');
+  }
+  for (int i = 0; i < prefix_len; i++) {
+    emit_char(emit, ctx, ret, prefix[i]);
+  }
+  emit_repeated(emit, ctx, ret, '0', zero_pad);
+  while (digit_len > 0) {
+    emit_char(emit, ctx, ret, digits_rev[--digit_len]);
+  }
+}
+
 static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
   int ret = 0;
   while (*fmt) {
@@ -66,152 +118,31 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
       case 'd': {
         int n = va_arg(ap, int);
         int is_neg = (n < 0);
-        unsigned int u = is_neg ? (unsigned int)(-(n + 1)) + 1 : (unsigned int)n;
-
+        uintptr_t u = (uintptr_t)(is_neg ? (unsigned int)(-(n + 1)) + 1 : (unsigned int)n);
         char buf[32];
-        int digit_len = 0;
-        if (u == 0) {
-          if (precision != 0) {
-            buf[digit_len++] = '0';
-          }
-        } else {
-          while (u) {
-            buf[digit_len++] = u % 10 + '0';
-            u /= 10;
-          }
-        }
-
-        int zero_pad = 0;
-        if (precision > digit_len) {
-          zero_pad = precision - digit_len;
-        }
-
-        int body_len = digit_len + zero_pad + (is_neg ? 1 : 0);
-        int space_pad = 0;
-        if (width > body_len) {
-          space_pad = width - body_len;
-        }
-
-        emit_repeated(emit, ctx, &ret, ' ', space_pad);
-        if (is_neg) {
-          emit_char(emit, ctx, &ret, '-');
-        }
-        emit_repeated(emit, ctx, &ret, '0', zero_pad);
-        while (digit_len > 0) {
-          emit_char(emit, ctx, &ret, buf[--digit_len]);
-        }
+        int digit_len = encode_uint_rev(buf, u, 10, precision, 0);
+        emit_number(emit, ctx, &ret, buf, digit_len, width, precision, is_neg, NULL);
         break;
       }
       case 'u': {
-        unsigned int u = va_arg(ap, unsigned int);
-
+        uintptr_t u = (uintptr_t)va_arg(ap, unsigned int);
         char buf[32];
-        int digit_len = 0;
-        if (u == 0) {
-          if (precision != 0) {
-            buf[digit_len++] = '0';
-          }
-        } else {
-          while (u) {
-            buf[digit_len++] = u % 10 + '0';
-            u /= 10;
-          }
-        }
-
-        int zero_pad = 0;
-        if (precision > digit_len) {
-          zero_pad = precision - digit_len;
-        }
-
-        int body_len = digit_len + zero_pad;
-        int space_pad = 0;
-        if (width > body_len) {
-          space_pad = width - body_len;
-        }
-
-        emit_repeated(emit, ctx, &ret, ' ', space_pad);
-        emit_repeated(emit, ctx, &ret, '0', zero_pad);
-        while (digit_len > 0) {
-          emit_char(emit, ctx, &ret, buf[--digit_len]);
-        }
+        int digit_len = encode_uint_rev(buf, u, 10, precision, 0);
+        emit_number(emit, ctx, &ret, buf, digit_len, width, precision, 0, NULL);
         break;
       }
       case 'x': {
-        unsigned int u = va_arg(ap, unsigned int);
-
+        uintptr_t u = (uintptr_t)va_arg(ap, unsigned int);
         char buf[32];
-        int digit_len = 0;
-        if (u == 0) {
-          if (precision != 0) {
-            buf[digit_len++] = '0';
-          }
-        } else {
-          while (u) {
-            unsigned int digit = u % 16;
-            if (digit < 10) {
-              buf[digit_len++] = digit + '0';
-            } else {
-              buf[digit_len++] = digit - 10 + 'a';
-            }
-            u /= 16;
-          }
-        }
-
-        int zero_pad = 0;
-        if (precision > digit_len) {
-          zero_pad = precision - digit_len;
-        }
-
-        int body_len = digit_len + zero_pad;
-        int space_pad = 0;
-        if (width > body_len) {
-          space_pad = width - body_len;
-        }
-
-        emit_repeated(emit, ctx, &ret, ' ', space_pad);
-        emit_repeated(emit, ctx, &ret, '0', zero_pad);
-        while (digit_len > 0) {
-          emit_char(emit, ctx, &ret, buf[--digit_len]);
-        }
+        int digit_len = encode_uint_rev(buf, u, 16, precision, 0);
+        emit_number(emit, ctx, &ret, buf, digit_len, width, precision, 0, NULL);
         break;
       }
       case 'p': {
         uintptr_t u = (uintptr_t)va_arg(ap, void *);
-
         char buf[2 * sizeof(uintptr_t)];
-        int digit_len = 0;
-        if (u == 0) {
-          buf[digit_len++] = '0';
-        } else {
-          while (u) {
-            uintptr_t digit = u % 16;
-            if (digit < 10) {
-              buf[digit_len++] = (char)(digit + '0');
-            } else {
-              buf[digit_len++] = (char)(digit - 10 + 'a');
-            }
-            u /= 16;
-          }
-        }
-
-        int zero_pad = 0;
-        if (precision > digit_len) {
-          zero_pad = precision - digit_len;
-        }
-
-        int body_len = 2 + zero_pad + digit_len;
-        int space_pad = 0;
-        if (width > body_len) {
-          space_pad = width - body_len;
-        }
-
-        emit_repeated(emit, ctx, &ret, ' ', space_pad);
-        emit_char(emit, ctx, &ret, '0');
-        emit_char(emit, ctx, &ret, 'x');
-        emit_repeated(emit, ctx, &ret, '0', zero_pad);
-        while (digit_len > 0) {
-          emit_char(emit, ctx, &ret, buf[--digit_len]);
-        }
+        int digit_len = encode_uint_rev(buf, u, 16, precision, 1);
+        emit_number(emit, ctx, &ret, buf, digit_len, width, precision, 0, "0x");
         break;
       }
       case 's': {
@@ -254,7 +185,7 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
         emit_char(emit, ctx, &ret, '%');
         break;
       }
-      default: panic(strcat("unsupported format: ", &*fmt));
+      default: panic("unsupported format");
     }
 
     fmt ++;
