@@ -26,16 +26,26 @@ size_t ramdisk_read(void *buf, size_t offset, size_t len);
 
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
-  size_t elf_size = get_ramdisk_size();
-  char *elf_buf = (char *)malloc(elf_size);
-  assert(elf_buf != NULL);
-  assert(ramdisk_read(elf_buf, 0, elf_size) == elf_size);
-
-  Elf_Ehdr *ehdr = (Elf_Ehdr *)elf_buf;
+  Elf_Ehdr *ehdr;
+  assert(ramdisk_read(&ehdr, 0, sizeof(Elf_Ehdr)) == sizeof(Elf_Ehdr));
   assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0);
   assert(ehdr->e_type == ET_EXEC);
   assert(ehdr->e_machine == EXPECT_TYPE);
   assert(ehdr->e_phnum > 0);
+
+  Elf_Phdr phdr;
+  for (int i = 0; i < ehdr->e_phnum; i++) {
+    assert(ramdisk_read(&phdr, ehdr->e_phoff + i * sizeof(Elf_Phdr), sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
+    if (phdr.p_type == PT_LOAD) {
+      // [VirtAddr, VirtAddr + MemSiz)
+      ramdisk_read((void *)phdr.p_vaddr, phdr.p_offset, phdr.p_filesz);
+      if (phdr.p_memsz > phdr.p_filesz) {
+        // [VirtAddr + FileSiz, VirtAddr + MemSiz)
+        memset((void *)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
+      }
+    }
+  }
+
   return ehdr->e_entry;
 }
 
