@@ -5,16 +5,17 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-int printf(const char *fmt, ...) {
-  char buf[10240];
-  va_list ap;
-  va_start(ap, fmt);
-  int ret = vsprintf(buf, fmt, ap);
-  va_end(ap);
-  for (char *p = buf; *p; p++) {
-    putch(*p);
+typedef void (*emit_func_t)(char ch, void *ctx);
+
+static void emit_char(emit_func_t emit, void *ctx, int *ret, char ch) {
+  emit(ch, ctx);
+  (*ret)++;
+}
+
+static void emit_repeated(emit_func_t emit, void *ctx, int *ret, char ch, int cnt) {
+  while (cnt-- > 0) {
+    emit_char(emit, ctx, ret, ch);
   }
-  return ret;
 }
 
 static int parse_uint(const char **fmt) {
@@ -26,12 +27,11 @@ static int parse_uint(const char **fmt) {
   return val;
 }
 
-int vsprintf(char *out, const char *fmt, va_list ap) {
+static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
   int ret = 0;
   while (*fmt) {
     if (*fmt != '%') {
-      *out++ = *fmt++;
-      ret ++;
+      emit_char(emit, ctx, &ret, *fmt++);
       continue;
     }
     fmt ++;
@@ -92,21 +92,13 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           space_pad = width - body_len;
         }
 
-        while (space_pad-- > 0) {
-          *out++ = ' ';
-          ret ++;
-        }
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
         if (is_neg) {
-          *out++ = '-';
-          ret ++;
+          emit_char(emit, ctx, &ret, '-');
         }
-        while (zero_pad-- > 0) {
-          *out++ = '0';
-          ret ++;
-        }
+        emit_repeated(emit, ctx, &ret, '0', zero_pad);
         while (digit_len > 0) {
-          *out++ = buf[--digit_len];
-          ret ++;
+          emit_char(emit, ctx, &ret, buf[--digit_len]);
         }
         break;
       }
@@ -137,17 +129,10 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           space_pad = width - body_len;
         }
 
-        while (space_pad-- > 0) {
-          *out++ = ' ';
-          ret ++;
-        }
-        while (zero_pad-- > 0) {
-          *out++ = '0';
-          ret ++;
-        }
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
+        emit_repeated(emit, ctx, &ret, '0', zero_pad);
         while (digit_len > 0) {
-          *out++ = buf[--digit_len];
-          ret ++;
+          emit_char(emit, ctx, &ret, buf[--digit_len]);
         }
         break;
       }
@@ -183,17 +168,10 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           space_pad = width - body_len;
         }
 
-        while (space_pad-- > 0) {
-          *out++ = ' ';
-          ret ++;
-        }
-        while (zero_pad-- > 0) {
-          *out++ = '0';
-          ret ++;
-        }
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
+        emit_repeated(emit, ctx, &ret, '0', zero_pad);
         while (digit_len > 0) {
-          *out++ = buf[--digit_len];
-          ret ++;
+          emit_char(emit, ctx, &ret, buf[--digit_len]);
         }
         break;
       }
@@ -218,35 +196,23 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           space_pad = width - out_len;
         }
 
-        while (space_pad-- > 0) {
-          *out++ = ' ';
-          ret ++;
-        }
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
         for (int i = 0; i < out_len; i++) {
-          *out++ = str[i];
-          ret ++;
+          emit_char(emit, ctx, &ret, str[i]);
         }
         break;
       }
       case 'c': {
         int ch = va_arg(ap, int);
         int space_pad = (width > 1) ? (width - 1) : 0;
-        while (space_pad-- > 0) {
-          *out++ = ' ';
-          ret ++;
-        }
-        *out++ = (char)ch;
-        ret ++;
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
+        emit_char(emit, ctx, &ret, (char)ch);
         break;
       }
       case '%': {
         int space_pad = (width > 1) ? (width - 1) : 0;
-        while (space_pad-- > 0) {
-          *out++ = ' ';
-          ret ++;
-        }
-        *out++ = '%';
-        ret ++;
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
+        emit_char(emit, ctx, &ret, '%');
         break;
       }
       default: panic("unsupported format");
@@ -254,7 +220,49 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 
     fmt ++;
   }
-  *out = '\0';
+  return ret;
+}
+
+static void emit_to_putch(char ch, void *ctx) {
+  (void)ctx;
+  putch(ch);
+}
+
+struct sprintf_ctx {
+  char *out;
+};
+
+static void emit_to_sprintf(char ch, void *ctx) {
+  struct sprintf_ctx *s = (struct sprintf_ctx *)ctx;
+  *s->out++ = ch;
+}
+
+struct snprintf_ctx {
+  char *out;
+  size_t n;
+  size_t pos;
+};
+
+static void emit_to_snprintf(char ch, void *ctx) {
+  struct snprintf_ctx *s = (struct snprintf_ctx *)ctx;
+  if (s->n > 0 && s->pos < s->n - 1) {
+    s->out[s->pos] = ch;
+  }
+  s->pos++;
+}
+
+int printf(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  int ret = vformat(emit_to_putch, NULL, fmt, ap);
+  va_end(ap);
+  return ret;
+}
+
+int vsprintf(char *out, const char *fmt, va_list ap) {
+  struct sprintf_ctx ctx = { .out = out };
+  int ret = vformat(emit_to_sprintf, &ctx, fmt, ap);
+  *ctx.out = '\0';
   return ret;
 }
 
@@ -275,9 +283,11 @@ int snprintf(char *out, size_t n, const char *fmt, ...) {
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
-  int ret = vsprintf(out, fmt, ap);
-  if (ret >= n) {
-    out[n - 1] = '\0';
+  struct snprintf_ctx ctx = { .out = out, .n = n, .pos = 0 };
+  int ret = vformat(emit_to_snprintf, &ctx, fmt, ap);
+  if (n > 0) {
+    size_t end = (ctx.pos < n - 1) ? ctx.pos : (n - 1);
+    out[end] = '\0';
   }
   return ret;
 }
