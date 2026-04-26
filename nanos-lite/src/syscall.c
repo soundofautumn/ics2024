@@ -2,7 +2,7 @@
 #include "syscall.h"
 
 static void sys_yield(Context *c) {
-  yield();
+  // yield();
   c->GPR2 = 0;
 }
 
