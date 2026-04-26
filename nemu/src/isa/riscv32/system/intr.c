@@ -17,9 +17,9 @@
 #include "../local-include/reg.h"
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
-  mepc = epc;  // mepc
-  mcause = NO;  // mcause
-  return mtvec; // mtvec
+  mepc = epc;
+  mcause = NO;
+  return mtvec;
 }
 
 word_t isa_query_intr() {
