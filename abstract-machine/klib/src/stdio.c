@@ -175,6 +175,45 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
         }
         break;
       }
+      case 'p': {
+        uintptr_t u = (uintptr_t)va_arg(ap, void *);
+
+        char buf[2 * sizeof(uintptr_t)];
+        int digit_len = 0;
+        if (u == 0) {
+          buf[digit_len++] = '0';
+        } else {
+          while (u) {
+            uintptr_t digit = u % 16;
+            if (digit < 10) {
+              buf[digit_len++] = (char)(digit + '0');
+            } else {
+              buf[digit_len++] = (char)(digit - 10 + 'a');
+            }
+            u /= 16;
+          }
+        }
+
+        int zero_pad = 0;
+        if (precision > digit_len) {
+          zero_pad = precision - digit_len;
+        }
+
+        int body_len = 2 + zero_pad + digit_len;
+        int space_pad = 0;
+        if (width > body_len) {
+          space_pad = width - body_len;
+        }
+
+        emit_repeated(emit, ctx, &ret, ' ', space_pad);
+        emit_char(emit, ctx, &ret, '0');
+        emit_char(emit, ctx, &ret, 'x');
+        emit_repeated(emit, ctx, &ret, '0', zero_pad);
+        while (digit_len > 0) {
+          emit_char(emit, ctx, &ret, buf[--digit_len]);
+        }
+        break;
+      }
       case 's': {
         const char *str = va_arg(ap, const char *);
         if (str == NULL) {
