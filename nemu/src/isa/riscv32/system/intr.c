@@ -17,6 +17,7 @@
 #include "../local-include/reg.h"
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
+  nemu_state.state = NEMU_STOP;
   Log("NO = %d, epc = " FMT_WORD, NO, epc);
   mepc = epc;
   mcause = NO;
