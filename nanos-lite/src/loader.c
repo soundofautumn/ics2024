@@ -26,6 +26,7 @@ size_t ramdisk_read(void *buf, size_t offset, size_t len);
 
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
+  Log("Loading ELF file '%s' to ramdisk...", filename);
   Elf_Ehdr *ehdr;
   assert(ramdisk_read(&ehdr, 0, sizeof(Elf_Ehdr)) == sizeof(Elf_Ehdr));
   assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0);
@@ -45,7 +46,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       }
     }
   }
-
+  Log("ELF file '%s' loaded successfully", filename);
   return ehdr->e_entry;
 }
 
