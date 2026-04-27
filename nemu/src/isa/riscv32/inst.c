@@ -152,7 +152,7 @@ static int decode_exec(Decode *s) {
 #endif
 
   // system
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(GPR1, s->pc); );
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(GPR1, s->pc); IFDEF(CONFIG_ETRACE, Log("ecall with a7 = %d", GPR1)); );
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
 
   // RV32/RV64 Zicsr Standard Extension
@@ -165,7 +165,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(rd) = imm);
 
   // privileged instructions
-  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = mtvec; );
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = mtvec; IFDEF(CONFIG_ETRACE, Log("mret")); );
 
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();

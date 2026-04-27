@@ -173,6 +173,10 @@ config FTRACE
   bool "Enable function trace"
   default n
 
+config ETRACE
+  bool "Enable exception trace"
+  default n
+
 config EXPR_TEST
   bool "Enable expression test"
   default n
