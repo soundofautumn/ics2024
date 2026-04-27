@@ -1,6 +1,8 @@
 #include <common.h>
 #include "syscall.h"
 
+#define CONFIG_STRACE
+
 static void sys_yield(uintptr_t *a) {
   yield();
   a[2] = 0;
@@ -23,8 +25,11 @@ void do_syscall(Context *c) {
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
 
-#define CONFIG_STRACE
 #ifdef CONFIG_STRACE
-    Log("strace: syscall %d => %d", a[0], a[2]);
+  switch (a[0]) {
+    case SYS_yield: Log("syscall: yield() -> %d", a[2]); break;
+    case SYS_exit: Log("syscall: exit(%d)", a[2]); break;
+    default: panic("Unhandled syscall ID = %d", a[0]);
+  }
 #endif
 }
