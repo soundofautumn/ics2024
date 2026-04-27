@@ -1,6 +1,7 @@
 #include <am.h>
 #include <riscv/riscv.h>
 #include <klib.h>
+#include <klib-macros.h>
 
 static Context* (*user_handler)(Event, Context*) = NULL;
 
@@ -16,6 +17,7 @@ Context* __am_irq_handle(Context *c) {
         ev.event = EVENT_SYSCALL; break;
       }
       default: {
+        panic("unhandled interrupt/exception");
         ev.event = EVENT_ERROR; 
         break;
       }
