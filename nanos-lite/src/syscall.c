@@ -23,6 +23,7 @@ void do_syscall(Context *c) {
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
 
+#define CONFIG_STRACE
 #ifdef CONFIG_STRACE
     Log("strace: syscall %d => %d", a[0], a[2]);
 #endif
