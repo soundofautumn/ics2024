@@ -16,8 +16,6 @@ Context* __am_irq_handle(Context *c) {
         break;
       }
     }
-    c->mepc += 4;
-
     c = user_handler(ev, c);
     assert(c != NULL);
   }
