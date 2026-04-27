@@ -9,17 +9,14 @@ Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
+      // NEMU's ecall sets mcause = -1
       case -1: {
         ev.event = EVENT_YIELD; break;
       }
-      case 0:
-      case 1: {
-        ev.event = EVENT_SYSCALL; break;
-      }
       default: {
-        panic("unhandled interrupt/exception");
-        ev.event = EVENT_ERROR; 
-        break;
+        // NEMU's ecall sets mcause = GPR1 (syscall number in a7)
+        // Non-negative values are all syscall numbers
+        ev.event = EVENT_SYSCALL; break;
       }
     }
     c = user_handler(ev, c);
