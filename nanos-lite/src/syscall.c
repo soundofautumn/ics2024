@@ -20,6 +20,7 @@ void do_syscall(Context *c) {
   a[3] = c->GPR4;
 
 #ifdef CONFIG_STRACE
+  // sys exit is special since it will not return, so we print the log before executing it.
   if (a[0] == SYS_exit) {
     Log("syscall: exit(%d)", a[2]);
   }
