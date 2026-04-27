@@ -17,7 +17,6 @@
 #include "../local-include/reg.h"
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
-  Log("NO = %d, epc = " FMT_WORD, NO, epc);
   mepc = epc;
   mcause = NO;
   return mtvec;
