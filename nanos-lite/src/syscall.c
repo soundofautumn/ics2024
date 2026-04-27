@@ -6,7 +6,7 @@
 void do_syscall(Context *c) {
   uintptr_t sysnum = c->GPR1;
   uintptr_t a0 = c->GPR2;
-  // uintptr_t a1 = c->GPR3;
+  uintptr_t a1 = c->GPR3;
   uintptr_t a2 = c->GPR4;
   uintptr_t ret = 0;
 
@@ -27,9 +27,9 @@ void do_syscall(Context *c) {
       break;
     }
     case SYS_write: {
-      // char *buf = (char *)a1;
+      char *buf = (char *)a1;
       for (int i = 0; i < a2; i++) {
-        // putch(buf[i]);
+        putch(buf[i]);
       }
       ret = a2;
       break;
