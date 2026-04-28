@@ -45,7 +45,7 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     close(fbctl);
   }
-  int fd = open("/dev/dispinfo", 0, 0);
+  int fd = open("/proc/dispinfo", 0, 0);
   char dispinfo[128];
   int nread = read(fd, dispinfo, sizeof(dispinfo) - 1);
   dispinfo[nread] = '\0';
