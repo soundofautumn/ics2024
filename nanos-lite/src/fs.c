@@ -12,6 +12,7 @@ typedef struct {
   size_t disk_offset;
   ReadFn read;
   WriteFn write;
+  size_t file_offset;
 } Finfo;
 
 enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB};
@@ -52,25 +53,24 @@ size_t fs_read(int fd, void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
   if(f->read == NULL) {
-    assert(f->disk_offset + len <= f->size);
-    Log("read from file '%s', offset = %d, len = %d", f->name, f->disk_offset, len);
-    size_t ret = ramdisk_read(buf, f->disk_offset, len);
-    f->disk_offset += ret;
+    Log("read from file '%s', offset = %d, len = %d", f->name, f->file_offset, len);
+    size_t ret = ramdisk_read(buf, f->disk_offset + f->file_offset, len);
+    f->file_offset += ret;
     return ret;
   }
-  return f->read(buf, f->disk_offset, len);
+  return f->read(buf, f->file_offset, len);
 }
 
 size_t fs_write(int fd, const void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
   if(f->write == NULL) {
-    assert(f->disk_offset + len <= f->size);
-    size_t ret = ramdisk_write(buf, f->disk_offset, len);
-    f->disk_offset += ret;
+    assert(f->file_offset + len <= f->size);
+    size_t ret = ramdisk_write(buf, f->disk_offset + f->file_offset, len);
+    f->file_offset += ret;
     return ret;
   }
-  return f->write(buf, f->disk_offset, len);
+  return f->write(buf, f->file_offset, len);
 }
 
 size_t fs_lseek(int fd, size_t offset, int whence) {
@@ -79,15 +79,15 @@ size_t fs_lseek(int fd, size_t offset, int whence) {
   size_t new_offset = 0;
   switch (whence) {
     case SEEK_SET: new_offset = offset; break;
-    case SEEK_CUR: new_offset = f->disk_offset + offset; break;
+    case SEEK_CUR: new_offset = f->file_offset + offset; break;
     case SEEK_END: new_offset = f->size + offset; break;
     default: panic("invalid whence = %d", whence);
   }
   if (new_offset > f->size) {
     panic("invalid offset = %d", new_offset);
   }
-  f->disk_offset = new_offset;
-  return f->disk_offset;
+  f->file_offset = new_offset;
+  return f->file_offset;
 }
 
 int fs_close(int fd) {
