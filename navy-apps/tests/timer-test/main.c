@@ -4,6 +4,7 @@
 
 int main() {
     int time = 0;
+    NDL_init();
     uint32_t old_time = NDL_GetTicks();
     while (1) {
         uint32_t new_time = NDL_GetTicks();
