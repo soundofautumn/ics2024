@@ -38,11 +38,7 @@ void do_syscall(Context *c) {
       break;
     }
     case SYS_write: {
-      char *buf = (char *)a1;
-      for (int i = 0; i < a2; i++) {
-        putch(buf[i]);
-      }
-      ret = a2;
+      ret = fs_write(a0, (const void *)a1, a2);
       STRACE_LOG("syscall: write(%d) -> %d", a2, ret);
       break;
     }
