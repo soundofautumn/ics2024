@@ -39,8 +39,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     assert(fs_read(fd, &phdr, sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
     if (phdr.p_type == PT_LOAD) {
       // [VirtAddr, VirtAddr + MemSiz)
-      fs_lseek(fd, phdr.p_offset, SEEK_SET);
-      fs_read(fd, (void *)phdr.p_vaddr, phdr.p_filesz);
+      assert(fs_lseek(fd, phdr.p_offset, SEEK_SET) == phdr.p_offset);
+      assert(fs_read(fd, (void *)phdr.p_vaddr, phdr.p_filesz) == phdr.p_filesz);
       if (phdr.p_memsz > phdr.p_filesz) {
         // [VirtAddr + FileSiz, VirtAddr + MemSiz)
         memset((void *)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
