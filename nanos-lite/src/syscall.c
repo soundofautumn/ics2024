@@ -66,6 +66,11 @@ void do_syscall(Context *c) {
       STRACE_LOG("syscall: close(%d) -> %d", a0, ret);
       break;
     }
+    case SYS_lseek: {
+      ret = fs_lseek(a0, a1, a2);
+      STRACE_LOG("syscall: lseek(%d, %d, %d) -> %d", a0, a1, a2, ret);
+      break;
+    }
     default: panic("Unhandled syscall ID = %d", sysnum);
   }
 
