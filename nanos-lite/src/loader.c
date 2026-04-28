@@ -45,6 +45,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
         // [VirtAddr + FileSiz, VirtAddr + MemSiz)
         memset((void *)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
       }
+      Log("phdr[%d]: p_offset = 0x%08x, p_vaddr = 0x%08x, p_filesz = 0x%08x, p_memsz = 0x%08x",
+          i, phdr.p_offset, phdr.p_vaddr, phdr.p_filesz, phdr.p_memsz);
     }
   }
   fs_close(fd);
