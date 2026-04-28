@@ -27,7 +27,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   int fd = fs_open(filename, 0, 0);
   assert(fd >= 0);
   Elf_Ehdr ehdr;
-  // assert(fs_lseek(fd, 0, SEEK_SET) == 0);
+  assert(fs_lseek(fd, 0, SEEK_SET) == 0);
   assert(fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) == sizeof(Elf_Ehdr));
   assert(memcmp(ehdr.e_ident, ELFMAG, SELFMAG) == 0);
   assert(ehdr.e_type == ET_EXEC);
