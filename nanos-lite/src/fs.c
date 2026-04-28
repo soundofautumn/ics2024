@@ -51,6 +51,8 @@ int fs_open(const char *pathname, int flags, int mode) {
 size_t fs_read(int fd, void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
+  Log("read from file '%s', disk_offset = %d, size = %d, read len = %d",
+      f->name, f->disk_offset, f->size, len);
   if(f->read == NULL) {
     assert(f->disk_offset + len <= f->size);
     size_t ret = ramdisk_read(buf, f->disk_offset, len);
