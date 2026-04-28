@@ -82,9 +82,9 @@ size_t fs_lseek(int fd, size_t offset, int whence) {
     case SEEK_END: new_offset = f->size + offset; break;
     default: panic("invalid whence = %d", whence);
   }
-  if (new_offset > f->size) {
-    panic("invalid offset = %d", new_offset);
-  }
+  // if (new_offset > f->size) {
+  //   panic("invalid offset = %d", new_offset);
+  // }
   f->open_offset = new_offset;
   return f->open_offset;
 }
