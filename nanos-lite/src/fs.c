@@ -52,9 +52,10 @@ size_t fs_read(int fd, void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
   if(f->read == NULL) {
-    ramdisk_read(buf, f->disk_offset, len);
-    f->disk_offset += len;
-    return len;
+    assert(f->disk_offset + len <= f->size);
+    size_t ret = ramdisk_read(buf, f->disk_offset, len);
+    f->disk_offset += ret;
+    return ret;
   }
   return f->read(buf, f->disk_offset, len);
 }
@@ -63,9 +64,10 @@ size_t fs_write(int fd, const void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
   if(f->write == NULL) {
-    ramdisk_write(buf, f->disk_offset, len);
-    f->disk_offset += len;
-    return len;
+    assert(f->disk_offset + len <= f->size);
+    size_t ret = ramdisk_write(buf, f->disk_offset, len);
+    f->disk_offset += ret;
+    return ret;
   }
   return f->write(buf, f->disk_offset, len);
 }
