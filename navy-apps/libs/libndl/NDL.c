@@ -22,7 +22,11 @@ uint32_t NDL_GetTicks() {
 }
 
 int NDL_PollEvent(char *buf, int len) {
-  return 0;
+  if (evtdev < 0) return 0;
+  int nread = read(evtdev, buf, len - 1);
+  if (nread <= 0) return 0;
+  buf[nread] = '\0';
+  return nread;
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
@@ -67,6 +71,7 @@ int NDL_Init(uint32_t flags) {
     evtdev = 3;
   }
   gettimeofday(&start_time, NULL);
+  eventfd = open("/dev/events", 0, 0);
   return 0;
 }
 
