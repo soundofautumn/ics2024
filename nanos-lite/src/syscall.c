@@ -39,7 +39,7 @@ void do_syscall(Context *c) {
     }
     case SYS_write: {
       ret = fs_write(a0, (const void *)a1, a2);
-      STRACE_LOG("syscall: write(%d) -> %d", a2, ret);
+      STRACE_LOG("syscall: write(%d, %p, %d) -> %d", a0, (const void *)a1, a2, ret);
       break;
     }
     case SYS_brk: {
