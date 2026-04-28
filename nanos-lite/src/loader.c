@@ -32,13 +32,12 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   assert(ehdr.e_type == ET_EXEC);
   assert(ehdr.e_machine == EXPECT_TYPE);
   assert(ehdr.e_phnum > 0);
-
+  Log("e_phoff = %d, e_phentsize = %d, e_phnum = %d", ehdr.e_phoff, ehdr.e_phentsize, ehdr.e_phnum);
   Elf_Phdr phdr;
   for (int i = 0; i < ehdr.e_phnum; i++) {
     assert(fs_lseek(fd, ehdr.e_phoff + i * sizeof(Elf_Phdr), SEEK_SET) == ehdr.e_phoff + i * sizeof(Elf_Phdr));
     assert(fs_read(fd, &phdr, sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
     if (phdr.p_type == PT_LOAD) {
-      Log("Loading segment %d at address %p with file size = %d, mem size = %d", i, phdr.p_vaddr, phdr.p_filesz, phdr.p_memsz);
       // [VirtAddr, VirtAddr + MemSiz)
       assert(fs_lseek(fd, phdr.p_offset, SEEK_SET) == phdr.p_offset);
       assert(fs_read(fd, (void *)phdr.p_vaddr, phdr.p_filesz) == phdr.p_filesz);
