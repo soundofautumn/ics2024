@@ -25,7 +25,6 @@
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
   int fd = fs_open(filename, 0, 0);
-  Log("Loading program '%s' from ramdisk, fd = %d", filename, fd);
   assert(fd >= 0);
   Elf_Ehdr ehdr;
   assert(fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) == sizeof(Elf_Ehdr));
@@ -36,9 +35,11 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   Elf_Phdr phdr;
   for (int i = 0; i < ehdr.e_phnum; i++) {
+    assert(fs_lseek(fd, ehdr.e_phoff + i * sizeof(Elf_Phdr), SEEK_SET) == ehdr.e_phoff + i * sizeof(Elf_Phdr));
     assert(fs_read(fd, &phdr, sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
     if (phdr.p_type == PT_LOAD) {
       // [VirtAddr, VirtAddr + MemSiz)
+      fs_lseek(fd, phdr.p_offset, SEEK_SET);
       fs_read(fd, (void *)phdr.p_vaddr, phdr.p_filesz);
       if (phdr.p_memsz > phdr.p_filesz) {
         // [VirtAddr + FileSiz, VirtAddr + MemSiz)
@@ -46,6 +47,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       }
     }
   }
+  fs_close(fd);
   return ehdr.e_entry;
 }
 
