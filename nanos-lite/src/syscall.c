@@ -1,4 +1,5 @@
 #include <common.h>
+#include <fs.h>
 #include "syscall.h"
 
 #define CONFIG_STRACE
@@ -48,6 +49,21 @@ void do_syscall(Context *c) {
     case SYS_brk: {
       ret = 0;
       STRACE_LOG("syscall: brk(%d) -> %d", a0, ret);
+      break;
+    }
+    case SYS_open: {
+      ret = fs_open((const char *)a0, a1, a2);
+      STRACE_LOG("syscall: open('%s') -> %d", (const char *)a0, ret);
+      break;
+    }
+    case SYS_read: {
+      ret = fs_read(a0, (void *)a1, a2);
+      STRACE_LOG("syscall: read(%d, %p, %d) -> %d", a0, (void *)a1, a2, ret);
+      break;
+    }
+    case SYS_close: {
+      ret = fs_close(a0);
+      STRACE_LOG("syscall: close(%d) -> %d", a0, ret);
       break;
     }
     default: panic("Unhandled syscall ID = %d", sysnum);
