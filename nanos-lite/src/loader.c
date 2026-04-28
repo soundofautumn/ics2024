@@ -25,6 +25,7 @@
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
   int fd = fs_open(filename, 0, 0);
+  Log("Loading program '%s' from ramdisk, fd = %d", filename, fd);
   assert(fd >= 0);
   Elf_Ehdr ehdr;
   assert(fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) == sizeof(Elf_Ehdr));
