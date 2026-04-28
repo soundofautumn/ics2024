@@ -45,6 +45,13 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     close(fbctl);
   }
+  int fd = open("/dev/dispinfo", 0, 0);
+  char dispinfo[128];
+  int nread = read(fd, dispinfo, sizeof(dispinfo) - 1);
+  dispinfo[nread] = '\0';
+  sscanf(dispinfo, "WIDTH:%d\nHEIGHT:%d\n", &screen_w, &screen_h);
+  *w = screen_w;
+  *h = screen_h;
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
