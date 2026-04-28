@@ -1,5 +1,6 @@
 #include <common.h>
 #include <fs.h>
+#include <sys/time.h>
 #include "syscall.h"
 
 #define CONFIG_STRACE
@@ -65,6 +66,15 @@ void do_syscall(Context *c) {
     case SYS_lseek: {
       ret = fs_lseek(a0, a1, a2);
       STRACE_LOG("syscall: lseek(%d, %d, %d) -> %d", a0, a1, a2, ret);
+      break;
+    }
+    case SYS_gettimeofday: {
+      struct timeval *tv = (struct timeval *)a0;
+      uint64_t us = io_read(AM_TIMER_UPTIME).us;
+      tv->tv_sec = us / 1000000;
+      tv->tv_usec = us % 1000000;
+      ret = 0;
+      STRACE_LOG("syscall: gettimeofday(%p, %p) -> %d", (void *)a0, (void *)a1, ret);
       break;
     }
     default: panic("Unhandled syscall ID = %d", sysnum);
