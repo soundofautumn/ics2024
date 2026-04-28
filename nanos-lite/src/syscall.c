@@ -11,6 +11,7 @@ char strace_buf[128];
   for (int i = 0; i < len; i++) { \
     putch(strace_buf[i]); \
   } \
+  putch('\n'); \
 } while (0)
 #else // CONFIG_STRACE
 #define STRACE_LOG(...) do { } while (0)
