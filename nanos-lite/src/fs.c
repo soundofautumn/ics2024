@@ -53,6 +53,7 @@ size_t fs_read(int fd, void *buf, size_t len) {
   Finfo *f = &file_table[fd];
   if(f->read == NULL) {
     assert(f->disk_offset + len <= f->size);
+    Log("read from file '%s', offset = %d, len = %d", f->name, f->disk_offset, len);
     size_t ret = ramdisk_read(buf, f->disk_offset, len);
     f->disk_offset += ret;
     return ret;
