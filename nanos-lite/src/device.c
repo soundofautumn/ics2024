@@ -46,17 +46,11 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 }
 
 size_t fb_write(const void *buf, size_t offset, size_t len) {
-  AM_GPU_CONFIG_T cfg;
-  ioe_read(AM_GPU_CONFIG, &cfg);
-  int w = cfg.width;
-  int x = offset / sizeof(uint32_t) % w;
-  int y = offset / sizeof(uint32_t) / w;
-  int h = cfg.height;
-  int max_len = (h - y) * w * sizeof(uint32_t) - x * sizeof(uint32_t);
-  if (len > max_len) {
-    len = max_len;
-  }
-  io_write(AM_GPU_FBDRAW, x, y, (void *)buf, len / sizeof(uint32_t), 1);
+  int x = offset % 400;
+  int y = offset / 400;
+  int w = len / sizeof(uint32_t);
+  int h = 1;
+  io_write(AM_GPU_FBDRAW, x, y, (void *)buf, w, h, true);
   return 0;
 }
 
