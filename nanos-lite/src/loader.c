@@ -32,7 +32,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   assert(ehdr.e_type == ET_EXEC);
   assert(ehdr.e_machine == EXPECT_TYPE);
   assert(ehdr.e_phnum > 0);
-  Log("e_phoff = %d, e_phentsize = %d, e_phnum = %d", ehdr.e_phoff, ehdr.e_phentsize, ehdr.e_phnum);
+  
   Elf_Phdr phdr;
   for (int i = 0; i < ehdr.e_phnum; i++) {
     assert(fs_lseek(fd, ehdr.e_phoff + i * sizeof(Elf_Phdr), SEEK_SET) == ehdr.e_phoff + i * sizeof(Elf_Phdr));
