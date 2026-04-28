@@ -13,7 +13,7 @@ uint32_t NDL_GetTicks() {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   uint32_t ticks = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-  Log("ticks = %u", ticks);
+  printf("ticks = %u\n", ticks);
   return ticks;
 }
 
