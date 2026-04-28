@@ -55,7 +55,6 @@ size_t fs_read(int fd, void *buf, size_t len) {
     assert(f->disk_offset + len <= f->size);
     size_t ret = ramdisk_read(buf, f->disk_offset, len);
     f->disk_offset += ret;
-    assert(f->disk_offset <= f->size);
     return ret;
   }
   return f->read(buf, f->disk_offset, len);
