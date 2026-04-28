@@ -44,6 +44,11 @@ void do_syscall(Context *c) {
       STRACE_LOG("syscall: write(%d) -> %d", a2, ret);
       break;
     }
+    case SYS_brk: {
+      ret = 0;
+      STRACE_LOG("syscall: brk(%d) -> %d", a0, ret);
+      break;
+    }
     default: panic("Unhandled syscall ID = %d", sysnum);
   }
 
