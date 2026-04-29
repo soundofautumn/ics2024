@@ -38,7 +38,7 @@ void do_syscall(Context *c) {
     }
     case SYS_exit: {
       STRACE_LOG("syscall: exit(%d)", a0);
-      halt(a0);
+      naive_uload(NULL, "/bin/nterm");
       break;
     }
     case SYS_write: {
