@@ -255,10 +255,6 @@ void Terminal::write(const char *str, size_t count) {
         case '\r':
           cursor.x = 0;
           break;
-        case '\b':
-          backspace();
-          dirty[cursor.y * w + cursor.x] = true;
-          break;
         default:
           putch(cursor.x, cursor.y, ch);
           move_one();
