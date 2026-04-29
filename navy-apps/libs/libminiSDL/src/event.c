@@ -14,12 +14,10 @@ int SDL_PushEvent(SDL_Event *ev) {
 }
 
 int SDL_PollEvent(SDL_Event *ev) {
-  assert(0);
   return 0;
 }
 
 int SDL_WaitEvent(SDL_Event *event) {
-  assert(0);
   return 1;
 }
 
