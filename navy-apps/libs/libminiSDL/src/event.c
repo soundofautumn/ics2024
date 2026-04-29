@@ -1,6 +1,8 @@
 #include <NDL.h>
 #include <SDL.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #define keyname(k) #k,
 
@@ -9,6 +11,17 @@ static const char *keyname[] = {
   _KEYS(keyname)
 };
 
+static int evt_fd = -1;
+
+static int read_event(char *buf, int len) {
+  if (evt_fd == -1) {
+    evt_fd = open("/dev/events", O_RDONLY | O_NONBLOCK);
+    if (evt_fd == -1) evt_fd = open("/dev/events", 0, 0);
+    if (evt_fd == -1) return -1;
+  }
+  return read(evt_fd, buf, len);
+}
+
 int SDL_PushEvent(SDL_Event *ev) {
   assert(0);
   return 0;
@@ -16,7 +29,7 @@ int SDL_PushEvent(SDL_Event *ev) {
 
 int SDL_PollEvent(SDL_Event *ev) {
   char buf[64];
-  int len = NDL_PollEvent(buf, sizeof(buf) - 1);
+  int len = read_event(buf, sizeof(buf) - 1);
   if (len <= 0) return 0;
   buf[len] = '\0';
 
