@@ -50,7 +50,6 @@ void init_fs() {
 }
 
 int fs_open(const char *pathname, int flags, int mode) {
-  printf("open file: %s\n", pathname);
   for (size_t i = 0; i < sizeof(file_table) / sizeof(file_table[0]); i++) {
     if (strcmp(pathname, file_table[i].name) == 0) {
       file_table[i].open_offset = 0;
@@ -65,6 +64,8 @@ size_t fs_read(int fd, void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
   if(f->read == NULL) {
+    if (f->open_offset >= f->size) return 0;
+    if (f->open_offset + len > f->size) len = f->size - f->open_offset;
     size_t ret = ramdisk_read(buf, f->disk_offset + f->open_offset, len);
     f->open_offset += ret;
     return ret;
@@ -76,7 +77,8 @@ size_t fs_write(int fd, const void *buf, size_t len) {
   assert(fd >= 0 && fd < sizeof(file_table) / sizeof(file_table[0]));
   Finfo *f = &file_table[fd];
   if(f->write == NULL) {
-    assert(f->open_offset + len <= f->size);
+    if (f->open_offset >= f->size) return 0;
+    if (f->open_offset + len > f->size) len = f->size - f->open_offset;
     size_t ret = ramdisk_write(buf, f->disk_offset + f->open_offset, len);
     f->open_offset += ret;
     return ret;
