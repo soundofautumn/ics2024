@@ -23,10 +23,8 @@ uint32_t NDL_GetTicks() {
 }
 
 int NDL_PollEvent(char *buf, int len) {
-  int fd = (evtdev != -1) ? evtdev : open("/dev/events", 0, 0);
-  int ret = read(fd, buf, len);
-  if (evtdev == -1) close(fd);
-  return ret;
+  int fd = open("/dev/events", 0, 0);
+  return read(fd, buf, len);
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
@@ -86,8 +84,6 @@ int NDL_QueryAudio() {
 int NDL_Init(uint32_t flags) {
   if (getenv("NWM_APP")) {
     evtdev = 3;
-  } else {
-    evtdev = open("/dev/events", 0, 0);
   }
   gettimeofday(&start_time, NULL);
   fbdev = open("/dev/fb", 0, 0);
@@ -96,5 +92,4 @@ int NDL_Init(uint32_t flags) {
 
 void NDL_Quit() {
   close(fbdev);
-  if (evtdev != -1) close(evtdev);
 }
