@@ -177,10 +177,6 @@ config ETRACE
   bool "Enable exception trace"
   default n
 
-config STRACE
-  bool "Enable system call trace"
-  default n
-
 config EXPR_TEST
   bool "Enable expression test"
   default n
