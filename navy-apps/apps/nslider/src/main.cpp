@@ -22,7 +22,6 @@ static int cur = 0;
 void render() {
   char fname[256];
   sprintf(fname, path, cur);
-  printf("rendering %s\n", fname);
   SDL_Surface *slide = SDL_LoadBMP(fname);
   assert(slide);
   SDL_BlitSurface(slide, NULL, screen, NULL);
@@ -57,7 +56,6 @@ int main() {
     SDL_WaitEvent(&e);
 
     if (e.type == SDL_KEYDOWN) {
-      printf("key down: %d\n", e.key.keysym.sym);
       switch(e.key.keysym.sym) {
         case SDLK_0: rep = rep * 10 + 0; break;
         case SDLK_1: rep = rep * 10 + 1; break;
