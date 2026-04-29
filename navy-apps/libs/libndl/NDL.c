@@ -8,6 +8,8 @@
 
 static int evtdev = -1;
 static int fbdev = -1;
+static int sb_fd = -1;
+static int sbctl_fd = -1;
 static int screen_w = 0, screen_h = 0;
 static struct timeval start_time;
 
@@ -68,17 +70,26 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
 }
 
 void NDL_OpenAudio(int freq, int channels, int samples) {
+  sbctl_fd = open("/dev/sbctl", 0);
+  sb_fd = open("/dev/sb", 0);
+  int init_data[3] = {freq, channels, samples};
+  write(sbctl_fd, init_data, sizeof(init_data));
 }
 
 void NDL_CloseAudio() {
+  close(sb_fd);
+  close(sbctl_fd);
+  sb_fd = sbctl_fd = -1;
 }
 
 int NDL_PlayAudio(void *buf, int len) {
-  return 0;
+  return write(sb_fd, buf, len);
 }
 
 int NDL_QueryAudio() {
-  return 0;
+  int free;
+  read(sbctl_fd, &free, sizeof(free));
+  return free;
 }
 
 int NDL_Init(uint32_t flags) {

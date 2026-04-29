@@ -15,6 +15,7 @@ int SDL_PushEvent(SDL_Event *ev) {
 }
 
 int SDL_PollEvent(SDL_Event *ev) {
+  CallbackHelper();
   char buf[64];
   int len = NDL_PollEvent(buf, sizeof(buf) - 1);
   if (len <= 0) return 0;

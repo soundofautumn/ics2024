@@ -1,5 +1,5 @@
 #include <NDL.h>
-#include <sdl-timer.h>
+#include <SDL.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -19,5 +19,7 @@ uint32_t SDL_GetTicks() {
 
 void SDL_Delay(uint32_t ms) {
   uint32_t start = SDL_GetTicks();
-  while (SDL_GetTicks() - start < ms);
+  while (SDL_GetTicks() - start < ms) {
+    CallbackHelper();
+  }
 }
