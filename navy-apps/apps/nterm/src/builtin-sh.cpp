@@ -1,5 +1,7 @@
 #include <nterm.h>
 #include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <SDL.h>
 
@@ -23,6 +25,30 @@ static void sh_prompt() {
 }
 
 static void sh_handle_cmd(const char *cmd) {
+  setenv("PATH", "/bin", 0);
+
+  static char buf[256];
+  static char *argv[64];
+  strncpy(buf, cmd, sizeof(buf) - 1);
+  buf[sizeof(buf) - 1] = '\0';
+
+  int len = strlen(buf);
+  while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r' || buf[len - 1] == ' ')) {
+    buf[--len] = '\0';
+  }
+
+  int argc = 0;
+  char *p = buf;
+  while (*p) {
+    while (*p == ' ') p++;
+    if (*p == '\0') break;
+    argv[argc++] = p;
+    while (*p && *p != ' ') p++;
+    if (*p) *p++ = '\0';
+  }
+  argv[argc] = NULL;
+
+  execvp(argv[0], argv);
 }
 
 void builtin_sh_run() {
