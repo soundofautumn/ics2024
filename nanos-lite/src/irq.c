@@ -7,7 +7,6 @@ static Context* do_event(Event e, Context* c) {
   switch (e.event) {
     case EVENT_YIELD: {
       return schedule(c);
-      break;
     }
     case EVENT_SYSCALL: {
       do_syscall(c);
