@@ -21,6 +21,7 @@ Context* __am_irq_handle(Context *c) {
     }
     c = user_handler(ev, c);
     assert(c != NULL);
+    c->mepc += 4;
   }
   return c;
 }
@@ -42,8 +43,6 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   *ctx = (Context){0};
   ctx->mepc = (uintptr_t)entry;
   ctx->mstatus = 0x1800;
-  // ctx->gpr[2] = (uintptr_t)kstack.end; // sp
-  // ctx->gpr[10] = (uintptr_t)arg;
   return ctx;
 }
 
