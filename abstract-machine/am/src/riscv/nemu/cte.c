@@ -22,7 +22,6 @@ Context* __am_irq_handle(Context *c) {
     c = user_handler(ev, c);
     assert(c != NULL);
   }
-  c->mepc += 4;
   return c;
 }
 
@@ -39,7 +38,13 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  return NULL;
+  Context *ctx = (Context *)(kstack.end - sizeof(Context));
+  *ctx = (Context){0};
+  ctx->mepc = (uintptr_t)entry;
+  ctx->mstatus = (3 << 11);
+  ctx->gpr[2] = (uintptr_t)kstack.end - (NR_REGS + 3) * sizeof(uintptr_t);
+  ctx->gpr[10] = (uintptr_t)arg;
+  return ctx;
 }
 
 void yield() {
