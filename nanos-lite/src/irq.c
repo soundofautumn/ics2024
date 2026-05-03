@@ -5,6 +5,9 @@ Context* schedule(Context *prev);
 
 static Context* do_event(Event e, Context* c) {
   switch (e.event) {
+    case EVENT_IRQ_TIMER: {
+      break;
+    }
     case EVENT_YIELD: {
       return schedule(c);
     }
