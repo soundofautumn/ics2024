@@ -31,7 +31,6 @@ void init_proc() {
   switch_boot_pcb();
 
   Log("Initializing processes...");
-  yield();
 
   // load program here
   // naive_uload(NULL, "/bin/menu");
