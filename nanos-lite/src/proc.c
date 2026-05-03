@@ -37,5 +37,12 @@ void init_proc() {
 }
 
 Context* schedule(Context *prev) {
+  current->cp = prev;
+  for (int i = 0; i < MAX_NR_PROC; i ++) {
+    if (pcb[i].cp != NULL) {
+      current = &pcb[i];
+      return current->cp;
+    }
+  }
   return NULL;
 }
