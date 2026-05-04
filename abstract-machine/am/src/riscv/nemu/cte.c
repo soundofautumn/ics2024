@@ -17,11 +17,11 @@ Context* __am_irq_handle(Context *c) {
         // NEMU's ecall sets mcause = GPR1 (syscall number in a7)
         // Non-negative values are all syscall numbers
         ev.event = EVENT_SYSCALL; break;
+        c->mepc += 4;
       }
     }
     c = user_handler(ev, c);
     assert(c != NULL);
-    c->mepc += 4;
   }
   return c;
 }
@@ -42,7 +42,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *ctx = (Context *)(kstack.end - sizeof(Context));
   *ctx = (Context){0};
   ctx->mepc = (uintptr_t)entry;
-  ctx->gpr[10] = (uintptr_t)arg; // a0 = arg
+  ctx->GPRx = (uintptr_t)arg;
   return ctx;
 }
 

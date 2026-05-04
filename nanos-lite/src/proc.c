@@ -44,9 +44,9 @@ Context* schedule(Context *prev) {
   for (int i = 0; i < MAX_NR_PROC; i ++) {
     if (pcb[i].cp != NULL && pcb[i].cp != prev) {
       current = &pcb[i];
-      printf("Switching to PCB %d\n", i);
-      return current->cp;
+      break;
     }
   }
-  return prev;
+  printf("schedule: switch to pcb %p\n", current);
+  return current->cp;
 }
