@@ -46,7 +46,7 @@ Context* do_syscall(Context *c) {
     }
     case SYS_write: {
       ret = fs_write(a0, (const void *)a1, a2);
-      STRACE_LOG("syscall: write(%d, %p, %d) -> %d", a0, (const void *)a1, a2, ret);
+      // STRACE_LOG("syscall: write(%d, %p, %d) -> %d", a0, (const void *)a1, a2, ret);
       break;
     }
     case SYS_brk: {
@@ -71,7 +71,7 @@ Context* do_syscall(Context *c) {
     }
     case SYS_lseek: {
       ret = fs_lseek(a0, a1, a2);
-      STRACE_LOG("syscall: lseek(%d, %d, %d) -> %d", a0, a1, a2, ret);
+      // STRACE_LOG("syscall: lseek(%d, %d, %d) -> %d", a0, a1, a2, ret);
       break;
     }
     case SYS_gettimeofday: {
