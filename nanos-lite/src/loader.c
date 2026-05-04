@@ -63,12 +63,12 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   pcb->cp = ucontext(&pcb->as, (Area) { pcb->stack, pcb->stack + STACK_SIZE }, (void *)entry);
 
   int argc = 0;
-  while (argv[argc] != NULL) {
+  while (argv && argv[argc] != NULL) {
     argc ++;
   }
 
   int envc = 0;
-  while (envp[envc] != NULL) {
+  while (envp && envp[envc] != NULL) {
     envc ++;
   }
 
