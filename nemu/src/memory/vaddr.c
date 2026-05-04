@@ -17,13 +17,38 @@
 #include <memory/paddr.h>
 
 word_t vaddr_ifetch(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+  if (isa_mmu_check(addr, len, MEM_TYPE_IFETCH) == MMU_DIRECT) {
+    return paddr_read(addr, len);
+  } else if (isa_mmu_check(addr, len, MEM_TYPE_IFETCH) == MMU_TRANSLATE) {
+    paddr_t paddr = isa_mmu_translate(addr, len, MEM_TYPE_IFETCH);
+    if (paddr != MEM_RET_FAIL) {
+      return paddr_read(paddr, len);
+    }
+  }
+  panic("Failed to fetch instruction at address " FMT_VADDR, addr);
 }
 
 word_t vaddr_read(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+  if (isa_mmu_check(addr, len, MEM_TYPE_READ) == MMU_DIRECT) {
+    return paddr_read(addr, len);
+  } else if (isa_mmu_check(addr, len, MEM_TYPE_READ) == MMU_TRANSLATE) {
+    paddr_t paddr = isa_mmu_translate(addr, len, MEM_TYPE_READ);
+    if (paddr != MEM_RET_FAIL) {
+      return paddr_read(paddr, len);
+    }
+  }
+  panic("Failed to read from address " FMT_VADDR, addr);
 }
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
-  paddr_write(addr, len, data);
+  if (isa_mmu_check(addr, len, MEM_TYPE_WRITE) == MMU_DIRECT) {
+    paddr_write(addr, len, data);
+  } else if (isa_mmu_check(addr, len, MEM_TYPE_WRITE) == MMU_TRANSLATE) {
+    paddr_t paddr = isa_mmu_translate(addr, len, MEM_TYPE_WRITE);
+    if (paddr != MEM_RET_FAIL) {
+      paddr_write(paddr, len, data);
+    }
+  } else {
+    panic("Failed to write to address " FMT_VADDR, addr);
+  }
 }
