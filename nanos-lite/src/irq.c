@@ -1,6 +1,6 @@
 #include <common.h>
 
-void do_syscall(Context *c);
+Context* do_syscall(Context *c);
 Context* schedule(Context *prev);
 
 static Context* do_event(Event e, Context* c) {
@@ -12,8 +12,7 @@ static Context* do_event(Event e, Context* c) {
       return schedule(c);
     }
     case EVENT_SYSCALL: {
-      do_syscall(c);
-      break;
+      return do_syscall(c);
     }
     default: panic("Unhandled event ID = %d", e.event);
   }

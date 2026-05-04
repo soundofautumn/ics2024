@@ -21,8 +21,9 @@ char strace_buf[128];
 #endif
 
 void naive_uload(PCB *pcb, const char *filename);
+void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
 
-void do_syscall(Context *c) {
+Context* do_syscall(Context *c) {
   uintptr_t sysnum = c->GPR1;
   uintptr_t a0 = c->GPR2;
   uintptr_t a1 = c->GPR3;
@@ -81,13 +82,13 @@ void do_syscall(Context *c) {
       break;
     }
     case SYS_execve: {
-      naive_uload(NULL, (const char *)a0);
-      ret = 0;
-      STRACE_LOG("syscall: execve('%s', %p, %p) -> %d", (const char *)a0, (char * const *)a1, (char * const *)a2, ret);
-      break;
+      context_uload(current, (const char *)a0, (char * const *)a1, (char * const *)a2);
+      STRACE_LOG("syscall: execve('%s', %p, %p) -> %d", (const char *)a0, (char * const *)a1, (char * const *)a2, 0);
+      return current->cp;
     }
     default: panic("Unhandled syscall ID = %d", sysnum);
   }
 
   c->GPRx = ret;
+  return c;
 }
