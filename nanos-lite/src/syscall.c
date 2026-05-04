@@ -85,7 +85,7 @@ Context* do_syscall(Context *c) {
     case SYS_execve: {
       const char *filename = (const char *)a0;
       if (fs_open(filename, 0, 0) < 0) {
-        ret = -1;
+        ret = -2;
         STRACE_LOG("syscall: execve('%s', %p, %p) -> %d", filename, (char * const *)a1, (char * const *)a2, ret);
         break;
       }
