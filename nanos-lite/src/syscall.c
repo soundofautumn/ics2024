@@ -56,12 +56,12 @@ Context* do_syscall(Context *c) {
     }
     case SYS_open: {
       ret = fs_open((const char *)a0, a1, a2);
-      STRACE_LOG("syscall: open('%s') -> %d", (const char *)a0, ret);
+      // STRACE_LOG("syscall: open('%s') -> %d", (const char *)a0, ret);
       break;
     }
     case SYS_read: {
       ret = fs_read(a0, (void *)a1, a2);
-      STRACE_LOG("syscall: read(%d, %p, %d) -> %d", a0, (void *)a1, a2, ret);
+      // STRACE_LOG("syscall: read(%d, %p, %d) -> %d", a0, (void *)a1, a2, ret);
       break;
     }
     case SYS_close: {
@@ -80,7 +80,7 @@ Context* do_syscall(Context *c) {
       tv->tv_sec = us / 1000000;
       tv->tv_usec = us % 1000000;
       ret = 0;
-      STRACE_LOG("syscall: gettimeofday(%p, %p) -> %d", (void *)a0, (void *)a1, ret);
+      // STRACE_LOG("syscall: gettimeofday(%p, %p) -> %d", (void *)a0, (void *)a1, ret);
       break;
     }
     case SYS_execve: {
