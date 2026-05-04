@@ -59,9 +59,7 @@ void naive_uload(PCB *pcb, const char *filename) {
 }
 
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
-  uintptr_t entry = loader(pcb, filename);
   void *user_stack = new_page(8);
-  pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
 
   int argc = 0;
   while (argv && argv[argc] != NULL) {
@@ -75,11 +73,13 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
 
   char *argv_copy[argc + 1];
   char *envp_copy[envc + 1];
+  envp_copy[envc] = NULL;
+  argv_copy[argc] = NULL;
+
   uint8_t *stack_top = (uint8_t *)user_stack + STACK_SIZE;
   stack_top -= sizeof(Context);
   stack_top -= sizeof(char *);
-  envp_copy[envc] = NULL;
-  argv_copy[argc] = NULL;
+
   for (int i = envc - 1; i >= 0; i --) {
     stack_top -= strlen(envp[i]) + 1;
     strcpy((char *)stack_top, envp[i]);
@@ -92,12 +92,26 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     argv_copy[i] = (char *)stack_top;
   }
 
+  uintptr_t align = (uintptr_t)stack_top % sizeof(uintptr_t);
+  if (align) {
+    stack_top -= align;
+  }
+
+  // envp
   stack_top -= sizeof(char *) * (envc + 1);
   memcpy(stack_top, envp_copy, sizeof(char *) * (envc + 1));
+
+  // argv
   stack_top -= sizeof(char *) * (argc + 1);
   memcpy(stack_top, argv_copy, sizeof(char *) * (argc + 1));
-  stack_top -= sizeof(int);
-  *(int *)stack_top = argc;
+
+  // argc
+  stack_top -= sizeof(uintptr_t);
+  *(uintptr_t *)stack_top = (uintptr_t)argc;
+
+  // entry
+  uintptr_t entry = loader(pcb, filename);
+  pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
   pcb->cp->GPRx = (uintptr_t)stack_top;
 }
 

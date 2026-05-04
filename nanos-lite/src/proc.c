@@ -30,7 +30,7 @@ void init_proc() {
   context_kload(&pcb[0], hello_fun, (void *)0xdeadbeef);
   char *const argv[] = { "/bin/nterm", NULL };
   char *const envp[] = { NULL };
-  context_uload(&pcb[1], "/bin/nterm", argv, envp);
+  context_uload(&pcb[1], argv[0], argv, envp);
   switch_boot_pcb();
 
   Log("Initializing processes...");
