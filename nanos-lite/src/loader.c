@@ -72,8 +72,6 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     envc ++;
   }
 
-  printf("argc = %d, envc = %d\n", argc, envc);
-
   char *argv_copy[argc + 1];
   char *envp_copy[envc + 1];
   uint8_t *stack_top = pcb->stack + STACK_SIZE;
