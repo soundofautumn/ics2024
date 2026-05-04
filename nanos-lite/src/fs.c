@@ -61,7 +61,6 @@ int fs_open(const char *pathname, int flags, int mode) {
       return i;
     }
   }
-  panic("cannot find file '%s'", pathname);
   return -1;
 }
 
