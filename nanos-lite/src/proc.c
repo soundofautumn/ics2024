@@ -47,6 +47,5 @@ Context* schedule(Context *prev) {
       break;
     }
   }
-  printf("schedule: switch to pcb %p\n", current);
   return current->cp;
 }
