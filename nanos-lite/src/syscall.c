@@ -83,11 +83,17 @@ Context* do_syscall(Context *c) {
       break;
     }
     case SYS_execve: {
-      context_uload(current, (const char *)a0, (char * const *)a1, (char * const *)a2);
+      const char *filename = (const char *)a0;
+      if (fs_open(filename, 0, 0) < 0) {
+        ret = -1;
+        STRACE_LOG("syscall: execve('%s', %p, %p) -> %d", filename, (char * const *)a1, (char * const *)a2, ret);
+        break;
+      }
+      context_uload(current, filename, (char * const *)a1, (char * const *)a2);
       switch_boot_pcb();
       yield();
       ret = 0;
-      STRACE_LOG("syscall: execve('%s', %p, %p) -> %d", (const char *)a0, (char * const *)a1, (char * const *)a2, 0);
+      STRACE_LOG("syscall: execve('%s', %p, %p) -> %d", filename, (char * const *)a1, (char * const *)a2, 0);
     }
     default: panic("Unhandled syscall ID = %d", sysnum);
   }
