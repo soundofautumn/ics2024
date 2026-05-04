@@ -62,7 +62,37 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   uintptr_t entry = loader(pcb, filename);
   pcb->cp = ucontext(&pcb->as, (Area) { pcb->stack, pcb->stack + STACK_SIZE }, (void *)entry);
 
-  printf("pcb->cp = %p\n", pcb->cp);
-  printf("pcb->stack = { .ptr = %p, .size = %d }\n", pcb->stack, sizeof(pcb->stack));
+  int argc = 0;
+  while (argv[argc] != NULL) {
+    argc ++;
+  }
+
+  int envc = 0;
+  while (envp[envc] != NULL) {
+    envc ++;
+  }
+
+  char *argv_copy[argc + 1];
+  char *envp_copy[envc + 1];
+  uint8_t *stack_top = pcb->stack + STACK_SIZE;
+  for (int i = envc - 1; i >= 0; i --) {
+    stack_top -= strlen(envp[i]) + 1;
+    strcpy((char *)stack_top, envp[i]);
+    envp_copy[i] = (char *)stack_top;
+  }
+
+  for (int i = argc - 1; i >= 0; i --) {
+    stack_top -= strlen(argv[i]) + 1;
+    strcpy((char *)stack_top, argv[i]);
+    argv_copy[i] = (char *)stack_top;
+  }
+
+  stack_top -= sizeof(char *) * (envc + 1);
+  memcpy(stack_top, envp_copy, sizeof(char *) * (envc + 1));
+  stack_top -= sizeof(char *) * (argc + 1);
+  memcpy(stack_top, argv_copy, sizeof(char *) * (argc + 1));
+  stack_top -= sizeof(int);
+  *(int *)stack_top = argc;
+  pcb->cp->GPRx = (uintptr_t)stack_top;
 }
 
