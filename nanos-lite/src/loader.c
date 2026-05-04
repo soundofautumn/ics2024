@@ -75,6 +75,9 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   char *argv_copy[argc + 1];
   char *envp_copy[envc + 1];
   uint8_t *stack_top = pcb->stack + STACK_SIZE;
+  stack_top -= sizeof(char *);
+  envp_copy[envc] = NULL;
+  argv_copy[argc] = NULL;
   for (int i = envc - 1; i >= 0; i --) {
     stack_top -= strlen(envp[i]) + 1;
     strcpy((char *)stack_top, envp[i]);
