@@ -31,7 +31,7 @@ void init_proc() {
   // char *const argv[] = { "/bin/menu", NULL };
   // char *const envp[] = { NULL };
   // context_uload(&pcb[1], "/bin/menu", argv, envp);
-  context_uload(&pcb[1], "/bin/menu", NULL, NULL);
+  context_uload(&pcb[1], "/bin/hello", NULL, NULL);
   switch_boot_pcb();
 
   Log("Initializing processes...");
