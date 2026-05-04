@@ -47,5 +47,5 @@ Context* schedule(Context *prev) {
       return current->cp;
     }
   }
-  return NULL;
+  return prev;
 }
