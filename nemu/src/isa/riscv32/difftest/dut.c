@@ -30,6 +30,26 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
              ref_r->pc, cpu.pc);
     return false;
   }
+  if (ref_r->csr[0x300] != cpu.csr[0x300]) {
+    LogError("mstatus is different: ref " FMT_WORD ", dut " FMT_WORD,
+             ref_r->csr[0x300], cpu.csr[0x300]);
+    return false;
+  }
+  if (ref_r->csr[0x305] != cpu.csr[0x305]) {
+    LogError("mtvec is different: ref " FMT_WORD ", dut " FMT_WORD,
+             ref_r->csr[0x305], cpu.csr[0x305]);
+    return false;
+  }
+  if (ref_r->csr[0x341] != cpu.csr[0x341]) {
+    LogError("mepc is different: ref " FMT_WORD ", dut " FMT_WORD,
+             ref_r->csr[0x341], cpu.csr[0x341]);
+    return false;
+  }
+  if (ref_r->csr[0x342] != cpu.csr[0x342]) {
+    LogError("mcause is different: ref " FMT_WORD ", dut " FMT_WORD,
+             ref_r->csr[0x342], cpu.csr[0x342]);
+    return false;
+  }
   return true;
 }
 
