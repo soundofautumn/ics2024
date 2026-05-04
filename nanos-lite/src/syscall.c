@@ -4,7 +4,7 @@
 #include <proc.h>
 #include "syscall.h"
 
-// #define CONFIG_STRACE
+#define CONFIG_STRACE
 
 #ifdef CONFIG_STRACE
 char strace_buf[128];
@@ -40,7 +40,8 @@ Context* do_syscall(Context *c) {
     }
     case SYS_exit: {
       STRACE_LOG("syscall: exit(%d)", a0);
-      naive_uload(NULL, "/bin/nterm");
+      halt(a0);
+      // naive_uload(NULL, "/bin/nterm");
       break;
     }
     case SYS_write: {
