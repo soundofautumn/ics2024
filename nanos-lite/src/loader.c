@@ -88,15 +88,17 @@ void naive_uload(PCB *pcb, const char *filename) {
   ((void(*)())entry) ();
 }
 
+#define USER_STACK_PGS (STACK_SIZE / PGSIZE)
+
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
 
-  void *user_stack = new_page(8);
+  void *user_stack = new_page(USER_STACK_PGS);
 
 #ifdef HAS_VME
   protect(&pcb->as);
 
   uintptr_t stack_va_start = (uintptr_t)pcb->as.area.end - STACK_SIZE;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < USER_STACK_PGS; i++) {
     map(&pcb->as, (void *)(stack_va_start + i * PGSIZE), user_stack + i * PGSIZE, MMAP_READ | MMAP_WRITE);
   }
 #endif
