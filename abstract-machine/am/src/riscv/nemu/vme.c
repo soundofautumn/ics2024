@@ -66,8 +66,15 @@ void __am_switch(Context *c) {
   }
 }
 
+#define BITMASK(bits) ((1ull << (bits)) - 1)
+#define BITS(x, hi, lo) (((x) >> (lo)) & BITMASK((hi) - (lo) + 1)) // similar to x[hi:lo] in verilog
+#define VPN1(va) BITS(va, 31, 22)
+#define VPN0(va) BITS(va, 21, 12)
+
 void map(AddrSpace *as, void *va, void *pa, int prot) {
-  
+  PTE *updir = (PTE*)as->ptr;
+  updir[VPN1((uintptr_t)va)] = (PTE)(PTE_V | PTE_R | PTE_W | PTE_X | ((uintptr_t)pa >> 12));
+  updir[VPN0((uintptr_t)va)] = (PTE)(PTE_V | PTE_R | PTE_W | PTE_X | ((uintptr_t)pa >> 12));
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
