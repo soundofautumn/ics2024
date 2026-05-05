@@ -70,22 +70,24 @@ void __am_switch(Context *c) {
 #define BITS(x, hi, lo) (((x) >> (lo)) & BITMASK((hi) - (lo) + 1)) // similar to x[hi:lo] in verilog
 #define VPN1(va) BITS(va, 31, 22)
 #define VPN0(va) BITS(va, 21, 12)
+#define PTE_PPN(pte) BITS(pte, 31, 10)
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   PTE *updir = (PTE*)as->ptr;
   uintptr_t vpn1 = VPN1((uintptr_t)va);
   uintptr_t vpn0 = VPN0((uintptr_t)va);
 
-  PTE l1e = updir[vpn1];
+  PTE pte = updir[vpn1];
   PTE *l0table;
-  if (!(l1e & PTE_V)) {
+  if (!(pte & PTE_V)) {
     l0table = (PTE *)pgalloc_usr(PGSIZE);
-    updir[vpn1] = ((uintptr_t)l0table >> 12) << 10 | PTE_V;
+    updir[vpn1] = (((uintptr_t)l0table >> 12) << 10) | PTE_V;
   } else {
-    l0table = (PTE *)((l1e >> 10) << 12);
+    l0table = (PTE *)(PTE)(PTE_PPN(pte) << 12);
   }
 
-  l0table[vpn0] = (PTE)(PTE_V | PTE_R | PTE_W | PTE_X | ((uintptr_t)pa >> 12));
+  pte = (PTE_V | PTE_R | PTE_W | PTE_X) | (((uintptr_t)pa >> 12) << 10);
+  l0table[vpn0] = pte;
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
