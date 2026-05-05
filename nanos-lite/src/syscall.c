@@ -40,6 +40,7 @@ Context* do_syscall(Context *c) {
     }
     case SYS_exit: {
       STRACE_LOG("syscall: exit(%d)", a0);
+      halt(a0);
       // naive_uload(NULL, "/bin/nterm");
       context_uload(current, "/bin/nterm", NULL, NULL);
       switch_boot_pcb();
