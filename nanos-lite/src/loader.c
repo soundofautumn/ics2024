@@ -39,6 +39,35 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     assert(fs_lseek(fd, ehdr.e_phoff + i * sizeof(Elf_Phdr), SEEK_SET) == ehdr.e_phoff + i * sizeof(Elf_Phdr));
     assert(fs_read(fd, &phdr, sizeof(Elf_Phdr)) == sizeof(Elf_Phdr));
     if (phdr.p_type == PT_LOAD) {
+#ifdef HAS_VME
+      uintptr_t seg_start = phdr.p_vaddr;
+      uintptr_t seg_end = phdr.p_vaddr + phdr.p_memsz;
+      uintptr_t page_start = ROUNDDOWN(seg_start, PGSIZE);
+
+      assert(fs_lseek(fd, phdr.p_offset, SEEK_SET) == phdr.p_offset);
+
+      size_t remain_file = phdr.p_filesz;
+
+      for (uintptr_t va = page_start; va < seg_end; va += PGSIZE) {
+        void *pa = new_page(1);
+        map(&pcb->as, (void *)va, pa, MMAP_READ | MMAP_WRITE);
+
+        size_t page_off = (va == page_start) ? (seg_start - page_start) : 0;
+
+        size_t ncpy = PGSIZE - page_off;
+        if (ncpy > remain_file) ncpy = remain_file;
+
+        if (ncpy > 0) {
+          assert(fs_read(fd, pa + page_off, ncpy) == ncpy);
+          remain_file -= ncpy;
+        }
+
+        size_t page_end = (va + PGSIZE < seg_end) ? PGSIZE : (seg_end - va);
+        if (page_end > page_off + ncpy) {
+          memset(pa + page_off + ncpy, 0, page_end - page_off - ncpy);
+        }
+      }
+#else
       // [VirtAddr, VirtAddr + MemSiz)
       assert(fs_lseek(fd, phdr.p_offset, SEEK_SET) == phdr.p_offset);
       assert(fs_read(fd, (void *)phdr.p_vaddr, phdr.p_filesz) == phdr.p_filesz);
@@ -46,6 +75,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
         // [VirtAddr + FileSiz, VirtAddr + MemSiz)
         memset((void *)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
       }
+#endif
     }
   }
   fs_close(fd);
@@ -59,7 +89,17 @@ void naive_uload(PCB *pcb, const char *filename) {
 }
 
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
+
   void *user_stack = new_page(8);
+
+#ifdef HAS_VME
+  protect(&pcb->as);
+
+  uintptr_t stack_va_start = (uintptr_t)pcb->as.area.end - STACK_SIZE;
+  for (int i = 0; i < 8; i++) {
+    map(&pcb->as, (void *)(stack_va_start + i * PGSIZE), user_stack + i * PGSIZE, MMAP_READ | MMAP_WRITE);
+  }
+#endif
 
   int argc = 0;
   while (argv && argv[argc] != NULL) {
@@ -112,6 +152,10 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   // entry
   uintptr_t entry = loader(pcb, filename);
   pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
+#ifdef HAS_VME
+  pcb->cp->GPRx = (uintptr_t)pcb->as.area.end - ((uintptr_t)user_stack + STACK_SIZE - (uintptr_t)stack_top);
+#else
   pcb->cp->GPRx = (uintptr_t)stack_top;
+#endif
 }
 
