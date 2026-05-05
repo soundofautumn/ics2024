@@ -28,7 +28,7 @@ Context* __am_irq_handle(Context *c) {
     c = user_handler(ev, c);
     assert(c != NULL);
   }
-  __am_switch(old_c);
+  if (c != old_c) __am_switch(c);
   return c;
 }
 
