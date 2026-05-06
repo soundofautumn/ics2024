@@ -29,6 +29,7 @@ void isa_reg_display() {
   printf("mtvec: " FMT_WORD "\n", mtvec);
   printf("mepc: " FMT_WORD "\n", mepc);
   printf("mcause: " FMT_WORD "\n", mcause);
+  printf("satp: " FMT_WORD "\n", satp);
   for (int i = 0; i < 32; i++) {
     printf("%-3s: " FMT_WORD "  ", regs[i], gpr(i));
     if (i % 4 == 3) {
