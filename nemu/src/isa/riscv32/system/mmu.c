@@ -47,5 +47,7 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
 
   paddr_t page_offset = vaddr & PAGE_MASK;
   if (page_offset + len > PAGE_SIZE) return MEM_RET_CROSS_PAGE;
-  return PTE_PPN(pte) << PAGE_SHIFT | page_offset;
+  paddr_t pa = (PTE_PPN(pte) << PAGE_SHIFT) | page_offset;
+  Log("va = " FMT_VADDR ", pa = " FMT_PADDR ", pte = " FMT_WORD, vaddr, pa, pte);
+  return pa;
 }
