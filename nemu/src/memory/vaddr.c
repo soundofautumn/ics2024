@@ -20,7 +20,6 @@ word_t vaddr_ifetch(vaddr_t addr, int len) {
   if (isa_mmu_check(addr, len, MEM_TYPE_IFETCH) == MMU_DIRECT) {
     return paddr_read(addr, len);
   } else if (isa_mmu_check(addr, len, MEM_TYPE_IFETCH) == MMU_TRANSLATE) {
-    // Log("ifetch addr = " FMT_VADDR ", len = %d", addr, len);
     paddr_t paddr = isa_mmu_translate(addr, len, MEM_TYPE_IFETCH);
     if (paddr != MEM_RET_FAIL) {
       return paddr_read(paddr, len);
@@ -33,7 +32,6 @@ word_t vaddr_read(vaddr_t addr, int len) {
   if (isa_mmu_check(addr, len, MEM_TYPE_READ) == MMU_DIRECT) {
     return paddr_read(addr, len);
   } else if (isa_mmu_check(addr, len, MEM_TYPE_READ) == MMU_TRANSLATE) {
-    // Log("read addr = " FMT_VADDR ", len = %d", addr, len);
     paddr_t paddr = isa_mmu_translate(addr, len, MEM_TYPE_READ);
     if (paddr != MEM_RET_FAIL) {
       return paddr_read(paddr, len);
