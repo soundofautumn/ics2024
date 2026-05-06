@@ -37,19 +37,16 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   word_t pte;
   paddr_t pdir = SATP_PPN(satp) << PAGE_SHIFT;
   paddr_t pte_addr = pdir + VPN1(vaddr) * sizeof(pte);
-  Log("satp = " FMT_WORD ", pdir = " FMT_PADDR ", pte_addr = " FMT_PADDR, satp, pdir, pte_addr);
   pte = paddr_read(pte_addr, sizeof(pte));
   if (!PTE_V(pte)) return MEM_RET_FAIL;
 
   pdir = PTE_PPN(pte) << PAGE_SHIFT;
   pte_addr = pdir + VPN0(vaddr) * sizeof(pte);
-  Log("satp = " FMT_WORD ", pdir = " FMT_PADDR ", pte_addr = " FMT_PADDR, satp, pdir, pte_addr);
   pte = paddr_read(pte_addr, sizeof(pte));
   if (!PTE_V(pte)) return MEM_RET_FAIL;
 
   paddr_t page_offset = vaddr & PAGE_MASK;
   if (page_offset + len > PAGE_SIZE) return MEM_RET_CROSS_PAGE;
   paddr_t pa = (PTE_PPN(pte) << PAGE_SHIFT) | page_offset;
-  Log("va = " FMT_VADDR ", pa = " FMT_PADDR ", pte = " FMT_WORD, vaddr, pa, pte);
   return pa;
 }
