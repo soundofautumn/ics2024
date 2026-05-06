@@ -17,6 +17,7 @@
 #define __ISA_RISCV_H__
 
 #include <common.h>
+#include "../local-include/reg.h"
 
 typedef struct {
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
@@ -29,6 +30,8 @@ typedef struct {
   uint32_t inst;
 } MUXDEF(CONFIG_RV64, riscv64_ISADecodeInfo, riscv32_ISADecodeInfo);
 
-#define isa_mmu_check(vaddr, len, type) (MMU_DIRECT)
+#define SATP_ENABLE(satp) BITS(satp, 31, 31)
+
+#define isa_mmu_check(vaddr, len, type) (SATP_ENABLE(satp) ? MMU_TRANSLATE : MMU_DIRECT)
 
 #endif
