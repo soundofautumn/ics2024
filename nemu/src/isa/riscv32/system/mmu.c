@@ -37,6 +37,7 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   word_t pte;
   paddr_t pdir = SATP_PPN(satp) << PAGE_SHIFT;
   paddr_t pte_addr = pdir + VPN1(vaddr) * sizeof(pte);
+  Log("satp = " FMT_WORD ", pdir = " FMT_PADDR ", pte_addr = " FMT_PADDR, satp, pdir, pte_addr);
   pte = paddr_read(pte_addr, sizeof(pte));
   if (!PTE_V(pte)) return MEM_RET_FAIL;
 
