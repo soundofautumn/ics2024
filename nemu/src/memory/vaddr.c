@@ -37,7 +37,7 @@ word_t vaddr_read(vaddr_t addr, int len) {
       return paddr_read(paddr, len);
     }
   }
-  panic("Failed to read from address " FMT_VADDR, addr);
+  panic("Failed to read from address " FMT_VADDR ", type: %d", addr, isa_mmu_check(addr, len, MEM_TYPE_READ));
 }
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
