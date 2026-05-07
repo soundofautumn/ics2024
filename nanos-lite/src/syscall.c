@@ -54,6 +54,7 @@ Context* do_syscall(Context *c) {
     }
     case SYS_brk: {
       ret = 0;
+      Log("syscall: brk(%p) -> %d", (void *)a0, ret);
       STRACE_LOG("syscall: brk(%p) -> %d", (void *)a0, ret);
       break;
     }
