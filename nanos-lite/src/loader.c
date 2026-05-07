@@ -98,6 +98,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   protect(&pcb->as);
 
   uintptr_t stack_va_start = (uintptr_t)pcb->as.area.end - STACK_SIZE;
+  Log("map user stack at va %p", stack_va_start);
   for (int i = 0; i < USER_STACK_PGS; i++) {
     map(&pcb->as, (void *)(stack_va_start + i * PGSIZE), user_stack + i * PGSIZE, MMAP_READ | MMAP_WRITE);
   }
