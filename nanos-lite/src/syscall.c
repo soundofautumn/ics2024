@@ -23,6 +23,7 @@ char strace_buf[128];
 void naive_uload(PCB *pcb, const char *filename);
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
 void switch_boot_pcb();
+int mm_brk(uintptr_t brk);
 
 Context* do_syscall(Context *c) {
   uintptr_t sysnum = c->GPR1;
@@ -53,8 +54,7 @@ Context* do_syscall(Context *c) {
       break;
     }
     case SYS_brk: {
-      ret = 0;
-      Log("syscall: brk(%p) -> %d", (void *)a0, ret);
+      ret = mm_brk(a0);
       STRACE_LOG("syscall: brk(%p) -> %d", (void *)a0, ret);
       break;
     }
