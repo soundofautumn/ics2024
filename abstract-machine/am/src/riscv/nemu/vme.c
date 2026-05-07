@@ -83,7 +83,7 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
   if (!(pte & PTE_V)) {
     l0table = (PTE *)pgalloc_usr(PGSIZE);
     updir[vpn1] = (((uintptr_t)l0table >> 12) << 10) | PTE_V;
-    printf("new page for vpn1 %d at %p\n", vpn1, l0table);
+    printf("new page table at %p for va %p\n", l0table, va);
   } else {
     l0table = (PTE *)(PTE)(PTE_PPN(pte) << 12);
   }
