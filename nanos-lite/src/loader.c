@@ -158,8 +158,17 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
 #ifdef HAS_VME
   pcb->cp->GPRx = (uintptr_t)pcb->as.area.end - ((uintptr_t)user_stack + STACK_SIZE - (uintptr_t)stack_top);
-#else
-  pcb->cp->GPRx = (uintptr_t)stack_top;
 #endif
+
+  // DEBUG: dump page table
+  printf("DEBUG context_uload: pcb=%p, user_stack=%p, as.ptr=%p\n", pcb, user_stack, pcb->as.ptr);
+  printf("DEBUG context_uload: cp=%p, cp->pdir=%p, cp->mepc=0x%x\n", pcb->cp, pcb->cp->pdir, pcb->cp->mepc);
+  printf("DEBUG context_uload: cp->GPRx=0x%x, stack_va_start=0x%x, STACK_SIZE=0x%x\n",
+         pcb->cp->GPRx, (uintptr_t)pcb->as.area.end - STACK_SIZE, STACK_SIZE);
+  // check root page table entry for VPN1=511 (user stack)
+  uintptr_t *updir = (uintptr_t *)pcb->as.ptr;
+  uintptr_t vpn1 = 0x1FF; // for user stack at 0x7fff8000
+  printf("DEBUG context_uload: updir[0x%lx] = 0x%x (PTE_V=%d)\n",
+         (unsigned long)vpn1, (unsigned int)updir[vpn1], !!(updir[vpn1] & 0x1));
 }
 
