@@ -156,8 +156,6 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   // entry
   uintptr_t entry = loader(pcb, filename);
   pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
-#ifdef HAS_VME
   pcb->cp->GPRx = (uintptr_t)stack_top;
-#endif
 }
 
