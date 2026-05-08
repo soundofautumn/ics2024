@@ -57,6 +57,8 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   *ctx = (Context){0};
   ctx->mepc = (uintptr_t)entry;
   ctx->GPRx = (uintptr_t)arg;
+  ctx->pdir = NULL;
+  ctx->mstatus = 0x1800; // MPP = 11 (machine mode) and MPIE = 1 (enabled) --- IGNORE ---
   return ctx;
 }
 

@@ -30,6 +30,9 @@ typedef struct {
 // Environment call from M-mode
 #define ECALL_NO 11
 
+#define MIE (1 << 3)
+#define MPIE (1 << 7)
+
 // decode
 typedef struct {
   uint32_t inst;

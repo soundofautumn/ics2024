@@ -16,8 +16,6 @@
 #include <isa.h>
 #include "../local-include/reg.h"
 
-#define MIE (1 << 3)
-#define MPIE (1 << 7)
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   mepc = epc;
