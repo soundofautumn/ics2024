@@ -62,7 +62,7 @@ void __am_get_cur_as(Context *c) {
 
 void __am_switch(Context *c) {
   if (vme_enable && c->pdir != NULL) {
-    printf("switch to address space %p (c=%p, mepc=0x%x)\n", c->pdir, c, c->mepc);
+    printf("switch to address space %p (c=%p, mepc=0x%lx)\n", c->pdir, c, (unsigned long)c->mepc);
     set_satp(c->pdir);
   } else if (vme_enable) {
     printf("__am_switch: skip (pdir=NULL, c=%p)\n", c);
@@ -104,7 +104,7 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
   if (!(pte & PTE_V)) {
     l0table = (PTE *)pgalloc_usr(PGSIZE);
     updir[vpn1] = (((uintptr_t)l0table >> 12) << 10) | PTE_V;
-    printf("new page table at %p for va %p (vpn1=%lu)\n", l0table, va, vpn1);
+    printf("new page table at %p for va %p (vpn1=%u)\n", l0table, va, (unsigned int)vpn1);
   } else {
     l0table = (PTE *)(PTE)(PTE_PPN(pte) << 12);
   }
