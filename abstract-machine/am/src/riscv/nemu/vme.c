@@ -62,10 +62,7 @@ void __am_get_cur_as(Context *c) {
 
 void __am_switch(Context *c) {
   if (vme_enable && c->pdir != NULL) {
-    printf("switch to address space %p (c=%p, mepc=0x%lx)\n", c->pdir, c, (unsigned long)c->mepc);
     set_satp(c->pdir);
-  } else if (vme_enable) {
-    printf("__am_switch: skip (pdir=NULL, c=%p)\n", c);
   }
 }
 
@@ -74,25 +71,6 @@ void __am_switch(Context *c) {
 #define VPN1(va) BITS(va, 31, 22)
 #define VPN0(va) BITS(va, 21, 12)
 #define PTE_PPN(pte) BITS(pte, 31, 10)
-
-void dump_pagetable(AddrSpace *as) {
-  PTE *updir = (PTE*)as->ptr;
-  printf("=== Page table %p ===\n", updir);
-  for (int i = 0; i < 1024; i++) {
-    if (updir[i] & PTE_V) {
-      PTE *l0 = (PTE *)(PTE)(PTE_PPN(updir[i]) << 12);
-      printf("  [%3d] l0=%p (pte=0x%x)\n", i, l0, (unsigned int)updir[i]);
-      for (int j = 0; j < 1024; j++) {
-        if (l0[j] & PTE_V) {
-          uintptr_t va_start = (i << 22) | (j << 12);
-          printf("    [%3d] va=0x%08x pa=0x%08lx pte=0x%x\n",
-                 j, va_start, (unsigned long)(PTE_PPN(l0[j]) << 12), (unsigned int)l0[j]);
-        }
-      }
-    }
-  }
-  printf("=== end ===\n");
-}
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   PTE *updir = (PTE*)as->ptr;
@@ -104,7 +82,6 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
   if (!(pte & PTE_V)) {
     l0table = (PTE *)pgalloc_usr(PGSIZE);
     updir[vpn1] = (((uintptr_t)l0table >> 12) << 10) | PTE_V;
-    printf("new page table at %p for va %p (vpn1=%u)\n", l0table, va, (unsigned int)vpn1);
   } else {
     l0table = (PTE *)(PTE)(PTE_PPN(pte) << 12);
   }
@@ -120,3 +97,5 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   ctx->pdir = as->ptr;
   return ctx;
 }
+
+
