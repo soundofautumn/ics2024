@@ -6,6 +6,7 @@ Context* schedule(Context *prev);
 static Context* do_event(Event e, Context* c) {
   switch (e.event) {
     case EVENT_IRQ_TIMER:
+      Log("Timer interrupt triggered");
     case EVENT_YIELD: {
       return schedule(c);
     }
