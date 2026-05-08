@@ -26,8 +26,6 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   return mtvec;
 }
 
-#define IRQ_TIMER 0x80000007
-
 word_t isa_query_intr() {
   if (cpu.INTR) {
     cpu.INTR = false;

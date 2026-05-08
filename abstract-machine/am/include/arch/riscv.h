@@ -23,4 +23,8 @@ struct Context {
 #define GPR4 gpr[12] // a2
 #define GPRx gpr[10] // a0
 
+#define IRQ_TIMER 0x80000007
+// Environment call from M-mode
+#define ECALL_NO 11
+
 #endif

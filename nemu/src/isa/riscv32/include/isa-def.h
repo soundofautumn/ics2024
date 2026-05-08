@@ -26,6 +26,10 @@ typedef struct {
   bool INTR;
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
+#define IRQ_TIMER 0x80000007
+// Environment call from M-mode
+#define ECALL_NO 11
+
 // decode
 typedef struct {
   uint32_t inst;
