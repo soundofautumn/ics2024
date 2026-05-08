@@ -164,8 +164,14 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(rd) = s->pc + imm);
   INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(rd) = imm);
 
+#define MIE (1 << 3)
+#define MPIE (1 << 7)
+
   // privileged instructions
-  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = mepc; IFDEF(CONFIG_ETRACE, Log("mret to mepc = 0x%x", mepc)); );
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = mepc; 
+                                                                // set MIE to MPIE, then clear MIE
+                                                                mstatus = (mstatus & ~MPIE) | ((mstatus & MPIE) << 4); 
+                                                                IFDEF(CONFIG_ETRACE, Log("mret to mepc = 0x%x", mepc)); );
 
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
