@@ -31,9 +31,7 @@ int mm_brk(uintptr_t brk) {
     return -1;
   }
   while (current->max_brk < new_brk) {
-    void *p = new_page(1);
-    map(&(current->as), (void *)current->max_brk, p, MMAP_READ | MMAP_WRITE);
-    memset(p, 0, PGSIZE);
+    map(&(current->as), (void *)current->max_brk, pg_alloc(PGSIZE), MMAP_READ | MMAP_WRITE);
     current->max_brk += PGSIZE;
   }
   return 0;
