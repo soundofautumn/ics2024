@@ -86,8 +86,8 @@ save_context:
   LOAD t0, OFFSET_NP(sp)
   li t1, NP_USER
   bne t0, t1, restore_context
-  addi sp, sp, CONTEXT_SIZE
-  csrw mscratch, sp
+  addi t0, sp, CONTEXT_SIZE
+  csrw mscratch, t0
 restore_context:
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
