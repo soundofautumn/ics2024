@@ -56,7 +56,7 @@ __am_asm_trap:
 save_context:
   addi sp, sp, -CONTEXT_SIZE
 
-;   STORE t0, OFFSET_NP(sp)  // (4) save np to context
+  STORE t0, OFFSET_NP(sp)  // (4) save np to context
 
   csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
 
