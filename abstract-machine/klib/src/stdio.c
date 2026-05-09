@@ -8,14 +8,10 @@
 
 typedef void (*emit_func_t)(char ch, void *ctx);
 
-static void emit_char(emit_func_t emit, void *ctx, int *ret, char ch) {
-  emit(ch, ctx);
-  (*ret)++;
-}
-
 static void emit_repeated(emit_func_t emit, void *ctx, int *ret, char ch, int cnt) {
   while (cnt-- > 0) {
-    emit_char(emit, ctx, ret, ch);
+    emit(ch, ctx);
+    (*ret)++;
   }
 }
 
@@ -28,10 +24,6 @@ static unsigned int parse_uint(const char **fmt) {
   return val;
 }
 
-static char to_digit(unsigned int digit) {
-  return (digit < 10) ? (char)('0' + digit) : (char)('a' + digit - 10);
-}
-
 static int encode_uint_rev(char *buf, uintmax_t u, int base, int precision, int keep_zero) {
   int digit_len = 0;
   if (u == 0) {
@@ -42,7 +34,8 @@ static int encode_uint_rev(char *buf, uintmax_t u, int base, int precision, int 
   }
 
   while (u) {
-    buf[digit_len++] = to_digit((unsigned int)(u % (uintmax_t)base));
+    unsigned int d = (unsigned int)(u % (uintmax_t)base);
+    buf[digit_len++] = (d < 10) ? (char)('0' + d) : (char)('a' + d - 10);
     u /= (uintmax_t)base;
   }
   return digit_len;
@@ -69,14 +62,18 @@ static void emit_number(emit_func_t emit, void *ctx, int *ret,
 
   emit_repeated(emit, ctx, ret, ' ', space_pad);
   if (is_neg) {
-    emit_char(emit, ctx, ret, '-');
+    emit('-', ctx);
+    (*ret)++;
   }
   for (int i = 0; i < prefix_len; i++) {
-    emit_char(emit, ctx, ret, prefix[i]);
+    emit(prefix[i], ctx);
+    (*ret)++;
   }
   emit_repeated(emit, ctx, ret, '0', zero_pad);
   while (digit_len > 0) {
-    emit_char(emit, ctx, ret, digits_rev[--digit_len]);
+    --digit_len;
+    emit(digits_rev[digit_len], ctx);
+    (*ret)++;
   }
 }
 
@@ -84,7 +81,9 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
   int ret = 0;
   while (*fmt) {
     if (*fmt != '%') {
-      emit_char(emit, ctx, &ret, *fmt++);
+      emit(*fmt, ctx);
+      ret++;
+      fmt++;
       continue;
     }
     fmt ++;
@@ -120,7 +119,7 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
       case 'd': {
         int n = va_arg(ap, int);
         int is_neg = (n < 0);
-        uintmax_t u = (uintmax_t)(is_neg ? (unsigned int)(-(n + 1)) + 1 : (unsigned int)n);
+        uintmax_t u = (uintmax_t)(is_neg ? -(unsigned int)n : (unsigned int)n);
         
         int digit_len = encode_uint_rev(buf, u, 10, precision, 0);
         emit_number(emit, ctx, &ret, buf, digit_len, width, precision, is_neg, NULL);
@@ -167,21 +166,19 @@ static int vformat(emit_func_t emit, void *ctx, const char *fmt, va_list ap) {
 
         emit_repeated(emit, ctx, &ret, ' ', space_pad);
         for (int i = 0; i < out_len; i++) {
-          emit_char(emit, ctx, &ret, str[i]);
+          emit(str[i], ctx);
+          ret++;
         }
         break;
       }
-      case 'c': {
-        int ch = va_arg(ap, int);
-        int space_pad = (width > 1) ? (width - 1) : 0;
-        emit_repeated(emit, ctx, &ret, ' ', space_pad);
-        emit_char(emit, ctx, &ret, (char)ch);
-        break;
-      }
+      case 'c':
       case '%': {
-        int space_pad = (width > 1) ? (width - 1) : 0;
-        emit_repeated(emit, ctx, &ret, ' ', space_pad);
-        emit_char(emit, ctx, &ret, '%');
+        char ch = (*fmt == '%') ? '%' : (char)va_arg(ap, int);
+        if (width > 1) {
+          emit_repeated(emit, ctx, &ret, ' ', width - 1);
+        }
+        emit(ch, ctx);
+        ret++;
         break;
       }
       default: panic("unsupported format");
