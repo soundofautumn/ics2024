@@ -53,9 +53,9 @@ save_context:
   addi sp, sp, -CONTEXT_SIZE
 
   MAP(REGS, PUSH)
-  
+
   csrr t0, mscratch        // (4) save the original sp to mscratch
-  STORE t0, OFFSET_SP(sp) // save the original sp to the context on stack
+  STORE t0, OFFSET_SP(sp)  // save the original sp to the context on stack
   
   csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
 
@@ -79,10 +79,9 @@ save_context:
 
   // if returning to user, save kernel sp to mscratch
   LOAD t0, OFFSET_NP(sp)
-  li t1, NP_USER
-  bne t0, t1, restore_context
-  addi t2, sp, CONTEXT_SIZE
-  csrw mscratch, t2
+  bnez t0, restore_context
+  addi t1, sp, CONTEXT_SIZE
+  csrw mscratch, t1
 restore_context:
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
