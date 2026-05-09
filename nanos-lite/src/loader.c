@@ -90,7 +90,6 @@ void naive_uload(PCB *pcb, const char *filename) {
 }
 
 #define USER_STACK_PGS (STACK_SIZE / PGSIZE)
-#define NO_USER_STACK
 
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
 
@@ -122,9 +121,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   argv_copy[argc] = NULL;
 
   uint8_t *stack_top = (uint8_t *)user_stack + STACK_SIZE;
-#ifndef NO_USER_STACK
   stack_top -= sizeof(Context);
-#endif
   stack_top -= sizeof(char *);
 
   for (int i = envc - 1; i >= 0; i --) {
@@ -158,16 +155,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
 
   // entry
   uintptr_t entry = loader(pcb, filename);
-#ifdef NO_USER_STACK
-  pcb->cp = ucontext(&pcb->as, (Area) { pcb->stack, pcb->stack + STACK_SIZE }, (void *)entry);
-# ifdef HAS_VME
-  pcb->cp->GPRx = (uintptr_t)pcb->as.area.end;
-# else
-  pcb->cp->GPRx = (uintptr_t)user_stack + STACK_SIZE;
-# endif
-#else
   pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
   pcb->cp->GPRx = (uintptr_t)stack_top;
-#endif
 }
 
