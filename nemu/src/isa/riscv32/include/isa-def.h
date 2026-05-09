@@ -26,6 +26,17 @@ typedef struct {
   bool INTR;
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
+#ifdef __riscv_e
+#define GPR1 gpr[15] // a5
+#else
+#define GPR1 gpr[17] // a7
+#endif
+
+#define GPR2 gpr[10] // a0
+#define GPR3 gpr[11] // a1
+#define GPR4 gpr[12] // a2
+#define GPRx gpr[10] // a0
+
 #define IRQ_TIMER 0x80000007
 // Environment call from U-mode, S-mode, M-mode
 #define ECALL_U 8

@@ -145,12 +145,6 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem    , R, R(rd) = (src2 == 0) ? src1 : ((int32_t)src1 % (int32_t)src2));
   INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu   , R, R(rd) = (src2 == 0) ? src1 : (src1 % src2));
 
-#ifdef __riscv_e
-#define GPR1 gpr(15) // a5
-#else
-#define GPR1 gpr(17) // a7
-#endif
-
   // system
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(ECALL_M, s->pc); IFDEF(CONFIG_ETRACE, Log("ecall with NO = %d, pc = 0x%x", GPR1, s->pc)); );
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
