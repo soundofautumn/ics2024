@@ -45,24 +45,19 @@ f(30) f(31)
 .align 3
 .globl __am_asm_trap
 __am_asm_trap:
-  li t0, NP_USER           // assume we are in user mode if mscratch is 0
-  mv t1, sp                // save original sp to t1
-
   csrrw sp, mscratch, sp   // (1) atomically exchange sp and mscratch
   bnez sp, save_context    // (2) take the branch if we trapped from user
   csrr sp, mscratch        // (3) if we trapped from kernel, restore the original sp
-  li t0, NP_KERNEL         // set np to kernel
 
 save_context:
   addi sp, sp, -CONTEXT_SIZE
 
-  STORE t0, OFFSET_NP(sp)  // (4) save np to context
-
-  csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
-
   MAP(REGS, PUSH)
-
-  STORE t1, OFFSET_SP(sp)  // (6) save original sp to context
+  
+  csrr t0, mscratch        // (4) save the original sp to mscratch
+  STORE t0, OFFSET_SP(sp) // save the original sp to the context on stack
+  
+  csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
 
   csrr t0, mcause
   csrr t1, mstatus
