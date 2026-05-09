@@ -26,7 +26,6 @@ void free_page(void *p) {
 
 /* The brk() system call handler. */
 int mm_brk(uintptr_t brk) {
-  return 0;
   uintptr_t new_brk = ROUNDUP(brk, PGSIZE);
   if (new_brk > (uintptr_t) heap.end) {
     return -1;
