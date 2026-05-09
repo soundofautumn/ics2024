@@ -161,9 +161,9 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
 #ifdef NO_USER_STACK
   pcb->cp = ucontext(&pcb->as, (Area) { pcb->stack, pcb->stack + STACK_SIZE }, (void *)entry);
 # ifdef HAS_VME
-  pcb->cp->gpr[2] = (uintptr_t)pcb->as.area.end;
+  pcb->cp->GPRx = (uintptr_t)pcb->as.area.end;
 # else
-  pcb->cp->gpr[2] = (uintptr_t)user_stack + STACK_SIZE;
+  pcb->cp->GPRx = (uintptr_t)user_stack + STACK_SIZE;
 # endif
 #else
   pcb->cp = ucontext(&pcb->as, (Area) { user_stack, user_stack + STACK_SIZE }, (void *)entry);
