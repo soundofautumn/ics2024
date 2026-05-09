@@ -95,7 +95,8 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   *ctx = (Context){0};
   ctx->mepc = (uintptr_t)entry;
   ctx->pdir = as->ptr;
-  ctx->mstatus = 0x1800 | MIE; // set MPP to M-mode, enable MIE
+  ctx->mstatus = MPP_M | MIE; // set MPP to M-mode, enable MIE
+  ctx->np = NP_USER; // user process
   return ctx;
 }
 

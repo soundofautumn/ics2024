@@ -58,7 +58,8 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   ctx->mepc = (uintptr_t)entry;
   ctx->GPRx = (uintptr_t)arg;
   ctx->pdir = NULL;
-  ctx->mstatus = 0x1800 | MIE; // set MPP to M-mode, enable MIE
+  ctx->mstatus = MPP_M | MIE; // set MPP to M-mode, enable MIE
+  ctx->np = NP_KERNEL; // kernel thread
   return ctx;
 }
 

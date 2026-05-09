@@ -34,7 +34,7 @@ static void restart() {
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
 
-  mstatus = 0x1800; // MPP = 11 (machine mode)
+  mstatus = MPP_M; // MPP = 11 (machine mode)
 }
 
 void init_isa() {

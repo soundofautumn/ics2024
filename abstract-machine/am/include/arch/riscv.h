@@ -10,6 +10,7 @@
 struct Context {
   uintptr_t gpr[NR_REGS], mcause, mstatus, mepc;
   void *pdir;
+  uintptr_t np; // 0 for kernel, 1 for user
 };
 
 #ifdef __riscv_e
@@ -27,7 +28,11 @@ struct Context {
 // Environment call from M-mode
 #define ECALL_NO 11
 
+#define MPP_M (3 << 11)
 #define MIE (1 << 3)
 #define MPIE (1 << 7)
+
+#define NP_KERNEL 0
+#define NP_USER 1
 
 #endif
