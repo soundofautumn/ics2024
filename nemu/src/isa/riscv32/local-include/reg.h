@@ -32,10 +32,9 @@ static inline const char* reg_name(int idx) {
 
 #define mstatus cpu.csr[0x300]
 #define mtvec cpu.csr[0x305]
+#define mscratch cpu.csr[0x340]
 #define mepc cpu.csr[0x341]
 #define mcause cpu.csr[0x342]
-
-#define mscratch cpu.csr[0x340]
 
 #define satp cpu.csr[0x180]
 
