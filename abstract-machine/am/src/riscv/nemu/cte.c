@@ -17,7 +17,9 @@ Context* __am_irq_handle(Context *c) {
         ev.event = EVENT_IRQ_TIMER;
         break;
       }
-      case ECALL_NO: {
+      case ECALL_U:
+      case ECALL_S:
+      case ECALL_M: {
         switch (c->GPR1) {
           case -1: {
             ev.event = EVENT_YIELD;
