@@ -89,7 +89,9 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 110 ????? 11000 11", bltu   , B, if (src1 < src2) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, if (src1 >= src2) s->dnpc = s->pc + imm);
 
-  IFDEF(CONFIG_FTRACE, void ftrace_call(word_t pc, word_t target_addr); void ftrace_ret(word_t pc, word_t target_addr););
+#ifdef CONFIG_FTRACE
+  void ftrace_call(word_t pc, word_t target_addr); 
+  void ftrace_ret(word_t pc, word_t target_addr);
   #define IS_LINK_REG(reg) ((reg) == 1 || (reg) == 5)
   #define FTRACE_CALL_OR_RET() do { \
     int rs1 = BITS(s->isa.inst, 19, 15); \
@@ -99,17 +101,23 @@ static int decode_exec(Decode *s) {
       ftrace_ret(s->pc, s->dnpc); \
     } \
   } while(0)
+  #define FTRACE_CALL() do { \
+    if (IS_LINK_REG(rd)) { \
+      ftrace_call(s->pc, s->dnpc); \
+    } \
+  } while(0)
+#else
+  #define FTRACE_CALL_OR_RET() do { } while(0)
+  #define FTRACE_CALL() do { } while(0)
+#endif // CONFIG_FTRACE
   
   // 001
   // jalr
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; IFDEF(CONFIG_FTRACE, FTRACE_CALL_OR_RET();) );
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->snpc; s->dnpc = (src1 + imm) & ~1; FTRACE_CALL_OR_RET(); );
 
   // 011
   // jal
-  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm; IFDEF(CONFIG_FTRACE, if (IS_LINK_REG(rd)) ftrace_call(s->pc, s->dnpc);) );
-
-  #undef IS_LINK_REG
-  #undef FTRACE_CALL_OR_RET
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm; FTRACE_CALL(); );
 
   // 100
   // op_imm
