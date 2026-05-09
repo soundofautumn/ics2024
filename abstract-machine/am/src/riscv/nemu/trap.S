@@ -82,20 +82,18 @@ save_context:
 
   mv sp, a0
 
-  // restore context
+// if returning to user, save kernel sp to mscratch
+  LOAD t0, OFFSET_NP(sp)
+  li t1, NP_USER
+  bne t0, t1, restore_context
+  addi sp, sp, CONTEXT_SIZE
+  csrw mscratch, sp
+restore_context:
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
   csrw mstatus, t1
   csrw mepc, t2
 
-  // if returning to user, save kernel sp to mscratch
-  LOAD t0, OFFSET_NP(sp)
-  li t1, NP_USER
-  bne t0, t1, _restore_regs
-  addi sp, sp, CONTEXT_SIZE
-  csrw mscratch, sp
-
-_restore_regs:
   MAP(REGS, POP)
 
   LOAD sp, OFFSET_SP(sp)   // restore original sp
