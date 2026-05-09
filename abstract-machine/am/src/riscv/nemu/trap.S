@@ -45,17 +45,12 @@ f(30) f(31)
 .align 3
 .globl __am_asm_trap
 __am_asm_trap:
+  li t0, NP_USER
+
   csrrw sp, mscratch, sp   // (1) atomically exchange sp and mscratch
-  bnez sp, _from_user      // (2) take the branch if we trapped from user
-_from_kernel:
+  bnez sp, save_context    // (2) take the branch if we trapped from user
   csrr sp, mscratch        // (3) if we trapped from kernel, restore the original sp
   li t0, NP_KERNEL
-  mv t1, sp
-  j save_context
-
-_from_user:
-  csrr t1, mscratch        // (4) read user's original sp from mscratch
-  li t0, NP_USER
 
 save_context:
   addi sp, sp, -CONTEXT_SIZE
