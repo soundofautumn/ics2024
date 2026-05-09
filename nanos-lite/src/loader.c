@@ -90,6 +90,7 @@ void naive_uload(PCB *pcb, const char *filename) {
 }
 
 #define USER_STACK_PGS (STACK_SIZE / PGSIZE)
+#define NO_USER_STACK
 
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
 
