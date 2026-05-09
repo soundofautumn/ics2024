@@ -33,7 +33,6 @@ int mm_brk(uintptr_t brk) {
   while (current->max_brk < new_brk) {
     void *p = new_page(1);
     map(&(current->as), (void *)current->max_brk, p, MMAP_READ | MMAP_WRITE);
-    memset(p, 0, PGSIZE);
     current->max_brk += PGSIZE;
   }
   return 0;
