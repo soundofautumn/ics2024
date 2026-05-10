@@ -79,7 +79,7 @@ save_context:
 
   // if returning to user, save kernel sp to mscratch
   LOAD t0, OFFSET_NP(sp)
-  bnez t0, restore_context
+  beqz t0, restore_context
   addi t1, sp, CONTEXT_SIZE
   csrw mscratch, t1
 restore_context:
