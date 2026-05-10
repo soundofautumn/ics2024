@@ -9,17 +9,6 @@ void __am_get_cur_as(Context *c);
 void __am_switch(Context *c);
 
 Context* __am_irq_handle(Context *c) {
-  printf("Handling interrupt: mcause = 0x%x, mepc = 0x%x\n", c->mcause, c->mepc);
-  printf("Context: %p\n", c);
-  printf("General-purpose registers:\n");
-  for (int i = 0; i < NR_REGS; i++) {
-    printf("  gpr[%d] = 0x%08x\n", i, c->gpr[i]);
-  }
-  printf("mstatus = 0x%08x\n", c->mstatus);
-  printf("mepc = 0x%08x\n", c->mepc);
-  printf("mcause = 0x%08x\n", c->mcause);
-  printf("pdir = %p\n", c->pdir);
-  printf("np = %d\n", c->np);
   __am_get_cur_as(c);
   if (user_handler) {
     Event ev = {0};
