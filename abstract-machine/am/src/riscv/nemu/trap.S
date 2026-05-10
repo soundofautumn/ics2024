@@ -64,7 +64,7 @@ save_context:
 np_save:  
   STORE t2, OFFSET_NP(sp)   // save the np field to the context on stack
   
-  csrw mscratch, x0         // (5) clear mscratch to indicate we are now in kernel
+  csrw mscratch, zero       // (5) clear mscratch to indicate we are now in kernel
 
   csrr t0, mcause
   csrr t1, mstatus
