@@ -58,9 +58,9 @@ save_context:
   STORE t0, OFFSET_SP(sp)  // save the original sp to the context on stack
 
   addi t1, sp, CONTEXT_SIZE   // calculate the kernel sp for this context
-  li t2, NP_USER
-  beq t0, t1, np_save
   li t2, NP_KERNEL
+  beq t0, t1, np_save
+  li t2, NP_USER
 np_save:  
   STORE t2, OFFSET_NP(sp)  // save the np field to the context on stack
   
