@@ -97,6 +97,7 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   ctx->pdir = as->ptr;
   ctx->mstatus = MPP_M | MIE; // set MPP to M-mode, enable MIE
   ctx->np = NP_USER; // user process
+  printf("Set up user context for entry = %p, ctx = %p, stack = [%p, %p)\n", entry, ctx, kstack.start, kstack.end);
   return ctx;
 }
 
