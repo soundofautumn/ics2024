@@ -20,7 +20,7 @@
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   mepc = epc;
   mcause = NO;
-  mstatus = (mstatus & ~MIE) | ((mstatus & MIE) << 4); // set MPIE to MIE, then clear MIE
+  mstatus =  ((mstatus & MIE) << 4) | (mstatus & ~MIE); // set MPIE to MIE, then clear MIE
   return mtvec;
 }
 
