@@ -56,6 +56,12 @@ save_context:
 
   csrr t0, mscratch        // (4) save the original sp to mscratch
   STORE t0, OFFSET_SP(sp)  // save the original sp to the context on stack
+
+  addi t1, sp, CONTEXT_SIZE   // calculate the kernel sp for this context
+  li t2, NP_USER
+  beq t0, t1, 1f
+  li t2, NP_KERNEL
+1:  STORE t2, OFFSET_NP(sp)  // save the np field to the context on stack
   
   csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
 
