@@ -170,7 +170,7 @@ static int decode_exec(Decode *s) {
   // privileged instructions
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = mepc; 
                                                                 // set MIE to MPIE, then set MPIE to 1
-                                                                mstatus =  ((mstatus & MPIE) >> 4) | (mstatus | MPIE);
+                                                                mstatus =  ((mstatus & MPIE) >> 4) | (mstatus & MPIE);
                                                                 IFDEF(CONFIG_ETRACE, Log("mret to mepc = 0x%x", mepc)); );
 
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
