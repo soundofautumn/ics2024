@@ -60,7 +60,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   ctx->mepc = (uintptr_t)entry;
   ctx->GPRx = (uintptr_t)arg;
   ctx->pdir = NULL;
-  // ctx->mstatus = MPP_M | MIE; // set MPP to M-mode, enable MIE
+  ctx->mstatus = MPP_M | MIE; // set MPP to M-mode, enable MIE
   ctx->np = NP_KERNEL; // kernel thread
   ctx->gpr[2] = (uintptr_t)kstack.end; // set sp to the end of the stack
   return ctx;
