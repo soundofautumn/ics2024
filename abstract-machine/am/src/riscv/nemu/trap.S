@@ -59,9 +59,10 @@ save_context:
 
   addi t1, sp, CONTEXT_SIZE   // calculate the kernel sp for this context
   li t2, NP_USER
-  beq t0, t1, 1f
+  beq t0, t1, np_save
   li t2, NP_KERNEL
-1:  STORE t2, OFFSET_NP(sp)  // save the np field to the context on stack
+np_save:  
+  STORE t2, OFFSET_NP(sp)  // save the np field to the context on stack
   
   csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
 
