@@ -9,6 +9,9 @@ void __am_get_cur_as(Context *c);
 void __am_switch(Context *c);
 
 Context* __am_irq_handle(Context *c) {
+  printf("Handling interrupt: mcause = 0x%x, mepc = 0x%x\n", c->mcause, c->mepc);
+  printf("Context dump: gpr[0] = 0x%x, gpr[1] = 0x%x, gpr[2] = 0x%x, gpr[3] = 0x%x\n",
+         c->gpr[0], c->gpr[1], c->gpr[2], c->gpr[3]);
   __am_get_cur_as(c);
   if (user_handler) {
     Event ev = {0};
