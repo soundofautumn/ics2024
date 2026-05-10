@@ -45,26 +45,26 @@ f(30) f(31)
 .align 3
 .globl __am_asm_trap
 __am_asm_trap:
-  csrrw sp, mscratch, sp   // (1) atomically exchange sp and mscratch
-  bnez sp, save_context    // (2) take the branch if we trapped from user
-  csrr sp, mscratch        // (3) if we trapped from kernel, restore the original sp
+  csrrw sp, mscratch, sp    // (1) atomically exchange sp and mscratch
+  bnez sp, save_context     // (2) take the branch if we trapped from user
+  csrr sp, mscratch         // (3) if we trapped from kernel, restore the original sp
 
 save_context:
   addi sp, sp, -CONTEXT_SIZE
 
   MAP(REGS, PUSH)
 
-  csrr t0, mscratch        // (4) save the original sp to mscratch
-  STORE t0, OFFSET_SP(sp)  // save the original sp to the context on stack
+  csrr t0, mscratch         // (4) save the original sp to mscratch
+  STORE t0, OFFSET_SP(sp)   // save the original sp to the context on stack
 
-  addi t1, sp, CONTEXT_SIZE   // calculate the kernel sp for this context
+  addi t1, sp, CONTEXT_SIZE // calculate the kernel sp for this context
   li t2, NP_KERNEL
   beq t0, t1, np_save
   li t2, NP_USER
 np_save:  
-  STORE t2, OFFSET_NP(sp)  // save the np field to the context on stack
+  STORE t2, OFFSET_NP(sp)   // save the np field to the context on stack
   
-  csrw mscratch, x0        // (5) clear mscratch to indicate we are now in kernel
+  csrw mscratch, x0         // (5) clear mscratch to indicate we are now in kernel
 
   csrr t0, mcause
   csrr t1, mstatus
@@ -97,6 +97,6 @@ restore_context:
 
   MAP(REGS, POP)
 
-  LOAD sp, OFFSET_SP(sp)   // restore original sp
+  LOAD sp, OFFSET_SP(sp)    // restore original sp
 
   mret
