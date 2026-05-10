@@ -47,5 +47,6 @@ Context* schedule(Context *prev) {
       break;
     }
   }
+  Log("Switching from %p to %p", prev, current->cp);
   return current->cp;
 }
