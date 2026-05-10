@@ -91,6 +91,5 @@ restore_context:
   MAP(REGS, POP)
 
   LOAD sp, OFFSET_SP(sp)   // restore original sp
-  addi sp, sp, CONTEXT_SIZE
 
   mret
